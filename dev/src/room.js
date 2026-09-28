@@ -41,14 +41,14 @@ async function buildMaterials() {
   const phys = (o) => new THREE.MeshPhysicalMaterial(o);
 
   const floor = woodTexture({ hue: 30, sat: 44, light: 40, planks: 6, size: 512, seed: 3 });
-  M.floor = std({ map: toTexture(floor.map, { repeat: [9, 7] }), normalMap: toTexture(floor.normal, { repeat: [9, 7], srgb: false }), roughnessMap: toTexture(floor.rough, { repeat: [9, 7], srgb: false }), roughness: 0.75, metalness: 0.02, envMapIntensity: 0.6 });
-  M.floor.normalScale = new THREE.Vector2(0.6, 0.6);
+  M.floor = phys({ map: toTexture(floor.map, { repeat: [9, 7] }), normalMap: toTexture(floor.normal, { repeat: [9, 7], srgb: false }), roughnessMap: toTexture(floor.rough, { repeat: [9, 7], srgb: false }), roughness: 0.62, metalness: 0.0, envMapIntensity: 0.7, clearcoat: 0.28, clearcoatRoughness: 0.42 });
+  M.floor.normalScale = new THREE.Vector2(0.8, 0.8);
   await yieldFrame('Oiling the walnut tables…', 26);
   const walnut = woodTexture({ hue: 22, sat: 38, light: 26, planks: 3, size: 256, seed: 12, grain: 1.4 });
-  M.walnut = std({ map: toTexture(walnut.map), normalMap: toTexture(walnut.normal, { srgb: false }), roughness: 0.55, metalness: 0.02, envMapIntensity: 0.5 });
+  M.walnut = phys({ map: toTexture(walnut.map), normalMap: toTexture(walnut.normal, { srgb: false }), roughness: 0.48, metalness: 0.0, envMapIntensity: 0.6, clearcoat: 0.4, clearcoatRoughness: 0.35 });
   M.walnut.normalScale = new THREE.Vector2(0.35, 0.35);
   const oak = woodTexture({ hue: 34, sat: 40, light: 52, planks: 4, size: 256, seed: 21 });
-  M.oak = std({ map: toTexture(oak.map), normalMap: toTexture(oak.normal, { srgb: false }), roughness: 0.6, metalness: 0.02 });
+  M.oak = phys({ map: toTexture(oak.map), normalMap: toTexture(oak.normal, { srgb: false }), roughness: 0.55, metalness: 0.0, clearcoat: 0.25, clearcoatRoughness: 0.45 });
   M.oak.normalScale = new THREE.Vector2(0.3, 0.3);
   const dark = woodTexture({ hue: 18, sat: 30, light: 16, planks: 2, size: 256, seed: 8 });
   M.darkwood = std({ map: toTexture(dark.map), roughness: 0.6, metalness: 0.03 });
@@ -62,19 +62,18 @@ async function buildMaterials() {
   M.ceiling = std({ color: 0xf1ebe1, roughness: 0.95, side: THREE.FrontSide });
   M.trim = std({ color: 0xf4efe6, roughness: 0.6 });
   M.tile = std({ map: toTexture(tileTexture(), { repeat: [2.5, 1.2] }), roughness: 0.25, metalness: 0.05, envMapIntensity: 0.8 });
-  M.steel = std({ color: 0xcfd2d6, metalness: 0.9, roughness: 0.28, envMapIntensity: 1.2 });
+  M.steel = std({ color: 0xd4d7db, metalness: 0.95, roughness: 0.22, envMapIntensity: 1.4 });
   M.steelDark = std({ color: 0x55585c, metalness: 0.85, roughness: 0.4 });
   M.black = std({ color: 0x1b1a1c, metalness: 0.4, roughness: 0.5 });
-  M.brass = std({ color: 0xc9a25a, metalness: 0.95, roughness: 0.3, envMapIntensity: 1.2 });
-  M.ceramic = std({ color: 0xf4f0ea, roughness: 0.3, metalness: 0.02, envMapIntensity: 0.7 });
-  M.ceramicRose = std({ color: 0xe6a9b8, roughness: 0.3, metalness: 0.02, envMapIntensity: 0.7 });
+  M.brass = std({ color: 0xc9a25a, metalness: 0.95, roughness: 0.28, envMapIntensity: 1.4 });
+  M.ceramic = phys({ color: 0xf4f0ea, roughness: 0.25, metalness: 0.0, envMapIntensity: 0.8, clearcoat: 0.6, clearcoatRoughness: 0.15 });
+  M.ceramicRose = phys({ color: 0xe6a9b8, roughness: 0.25, metalness: 0.0, envMapIntensity: 0.8, clearcoat: 0.6, clearcoatRoughness: 0.15 });
   M.coffee = std({ color: 0x3b2418, roughness: 0.15, metalness: 0.05 });
   M.latte = std({ color: 0xc9a27e, roughness: 0.4 });
-  M.fabricRose = std({ map: toTexture(fabricTexture({ r: 196, g: 128, b: 140 }), { repeat: [3, 3] }), roughness: 0.95 });
-  M.fabricSage = std({ map: toTexture(fabricTexture({ r: 132, g: 148, b: 122, seed: 2 }), { repeat: [3, 3] }), roughness: 0.95 });
-  M.fabricCream = std({ map: toTexture(fabricTexture({ r: 222, g: 208, b: 186, seed: 4 }), { repeat: [3, 3] }), roughness: 0.95 });
-  M.leather = std({ color: 0x5b3a2a, roughness: 0.55, metalness: 0.05, envMapIntensity: 0.5 });
-  M.velvet = phys({ color: 0x6b3c50, roughness: 0.9, sheen: 1, sheenRoughness: 0.6, sheenColor: new THREE.Color(0xb07088) });
+  const fab = (r, g, b, seed) => { const c = fabricTexture({ r, g, b, seed }); const m = phys({ map: toTexture(c, { repeat: [3, 3] }), normalMap: toTexture(heightToNormal(c, 1.2), { repeat: [3, 3], srgb: false }), roughness: 0.95, sheen: 0.5, sheenRoughness: 0.8, sheenColor: new THREE.Color(r / 255, g / 255, b / 255).lerp(new THREE.Color(1, 1, 1), 0.3) }); m.normalScale = new THREE.Vector2(0.5, 0.5); return m; };
+  M.fabricRose = fab(196, 128, 140, 9); M.fabricSage = fab(132, 148, 122, 2); M.fabricCream = fab(222, 208, 186, 4);
+  M.leather = phys({ color: 0x5b3a2a, roughness: 0.5, metalness: 0.0, envMapIntensity: 0.6, clearcoat: 0.3, clearcoatRoughness: 0.5, normalMap: toTexture(heightToNormal(fabricTexture({ r: 90, g: 60, b: 40, weave: 5, seed: 21 }), 0.6), { repeat: [4, 4], srgb: false }) }); M.leather.normalScale = new THREE.Vector2(0.25, 0.25);
+  M.velvet = phys({ color: 0x6b3c50, roughness: 0.9, sheen: 1, sheenRoughness: 0.55, sheenColor: new THREE.Color(0xc07898), normalMap: toTexture(heightToNormal(fabricTexture({ r: 100, g: 60, b: 80, weave: 2, seed: 12 }), 0.8), { repeat: [6, 6], srgb: false }) }); M.velvet.normalScale = new THREE.Vector2(0.35, 0.35);
   M.rug = std({ map: toTexture(rugTexture(), { aniso: true }), roughness: 1 });
   M.sisal = std({ map: toTexture(fabricTexture({ r: 190, g: 160, b: 110, weave: 2, seed: 6 }), { repeat: [4, 1] }), roughness: 1 });
   M.carpetGray = std({ map: toTexture(fabricTexture({ r: 120, g: 118, b: 118, weave: 2, seed: 3 }), { repeat: [2, 2] }), roughness: 1 });
@@ -84,7 +83,7 @@ async function buildMaterials() {
   M.leafMonstera = std({ map: leafTexture('monstera'), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 });
   M.leafFern = std({ map: leafTexture('fern'), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.7 });
   M.leafSnake = std({ map: leafTexture('snake'), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6 });
-  M.glass = phys({ color: 0xdfe8ec, transparent: true, opacity: 0.18, roughness: 0.05, metalness: 0, envMapIntensity: 1.5, side: THREE.DoubleSide, depthWrite: false });
+  M.glass = phys({ color: 0xe8f0f4, transparent: true, opacity: 0.14, roughness: 0.03, metalness: 0, envMapIntensity: 1.6, side: THREE.DoubleSide, depthWrite: false, reflectivity: 1, clearcoat: 1, clearcoatRoughness: 0.02 });
   M.glassCase = phys({ color: 0xe8eef0, transparent: true, opacity: 0.25, roughness: 0.05, metalness: 0.05, envMapIntensity: 1.5, side: THREE.DoubleSide, depthWrite: false });
   M.bulb = std({ color: 0xfff1d6, emissive: 0xffc98a, emissiveIntensity: 2.2, roughness: 0.3 });
   M.bulbOff = std({ color: 0xd8d2c8, roughness: 0.3 });
@@ -212,7 +211,7 @@ function buildSky() {
     fragmentShader: `uniform vec3 topColor, horizonColor, sunDir, sunColor; uniform float night; varying vec3 vDir;
       float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7)))*43758.5453); }
       void main(){ float t = clamp(vDir.y, 0.0, 1.0); vec3 col = mix(horizonColor, topColor, pow(t, 0.55));
-        float s = max(dot(vDir, sunDir), 0.0); col += sunColor * (pow(s, 380.0) * 2.5 + pow(s, 8.0) * 0.25);
+        float s = max(dot(vDir, sunDir), 0.0); col += sunColor * (pow(s, 900.0) * 6.0 + pow(s, 120.0) * 1.2 + pow(s, 6.0) * 0.22);
         if (night > 0.02) { vec2 p = floor(vDir.xz / max(vDir.y, 0.05) * 60.0); float st = step(0.997, hash(p)) * night * t; col += vec3(st); }
         gl_FragColor = vec4(col, 1.0); }`,
   });
@@ -225,7 +224,7 @@ function buildLights() {
   sun.shadow.mapSize.set(W.quality === 'high' ? 2048 : 1024, W.quality === 'high' ? 2048 : 1024);
   sun.shadow.camera.near = 1; sun.shadow.camera.far = 40; sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.02;
   const sc = sun.shadow.camera; sc.left = -9; sc.right = 9; sc.top = 8; sc.bottom = -8;
-  sun.target.position.set(0, 0, 0); W.scene.add(sun, sun.target); W.sun = sun;
+  sun.target.position.set(0, 0, 0); W.sun = sun;   // not added to the scene: the cascaded-shadow lights (post.js) mirror it
   W.hemi = new THREE.HemisphereLight(0xbfd4ff, 0x6b5240, 0.55); W.scene.add(W.hemi);
   W.ambient = new THREE.AmbientLight(0xffe6c8, 0.12); W.scene.add(W.ambient);
   // pendant point lights (no shadows — cheap)
@@ -254,11 +253,12 @@ function updateDaylight() {
   const golden = 1 - smoothstep(0.05, 0.45, Math.sin(elev));
   W.sun.position.copy(sunDir).multiplyScalar(22); W.sun.intensity = 3.4 * up;
   W.sun.color.setHSL(0.09 - golden * 0.03, 0.55 * golden + 0.1, 0.95 - golden * 0.25);
+  if (W.csm) { W.csm.lightDirection.copy(sunDir).negate(); W.csm.lights.forEach(l => { l.intensity = W.sun.intensity; l.color.copy(W.sun.color); }); }
   const night = 1 - up;
-  W.hemi.intensity = 0.15 + 0.5 * up; W.hemi.color.setHSL(0.6, 0.5, 0.75 - night * 0.4); W.hemi.groundColor.setHSL(0.08, 0.4, 0.3 - night * 0.15);
-  W.ambient.intensity = 0.03 + 0.08 * up;
-  W.scene.environmentIntensity = 0.1 + 0.4 * up;          // the env-map 'skylight' fades with the daylight
-  if (W.sky) { const u = W.sky.material.uniforms; u.sunDir.value.copy(sunDir); u.topColor.value.setHSL(0.6, 0.55 - night * 0.3, lerp(0.06, 0.52, up) - golden * 0.1 * up); u.horizonColor.value.setHSL(0.08 - golden * 0.02, 0.35 + golden * 0.35 * up, lerp(0.12, 0.82, up)); u.night.value = night; }
+  W.hemi.intensity = 0.12 + 0.3 * up; W.hemi.color.setHSL(0.6, 0.5, 0.75 - night * 0.4); W.hemi.groundColor.setHSL(0.08, 0.4, 0.3 - night * 0.15);
+  W.ambient.intensity = 0.02 + 0.05 * up;
+  W.scene.environmentIntensity = 0.12 + 0.45 * up;        // the sky env-map 'skylight' fades with the daylight
+  if (W.sky) { const u = W.sky.material.uniforms; u.sunDir.value.copy(sunDir); u.topColor.value.setHSL(0.6 - golden * 0.03, 0.6 - night * 0.3, lerp(0.05, 0.5, up) - golden * 0.14 * up); u.horizonColor.value.setHSL(0.075 - golden * 0.045, 0.3 + golden * 0.62 * up, lerp(0.1, 0.8, up) - golden * 0.18 * up); u.sunColor.value.copy(W.sun.color); u.night.value = night; }
   if (W.scene.fog) W.scene.fog.color.copy(W.sky.material.uniforms.horizonColor.value);
   // interior lights: on when it's dim or when the switch is on
   const want = W.lightsOn ? 1 : 0; const dim = 0.3 + 0.7 * (1 - up);

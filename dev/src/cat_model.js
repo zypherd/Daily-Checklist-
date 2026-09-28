@@ -45,7 +45,14 @@ function furMaterial(spec, points = false) {
   const base = points ? spec.points : spec.fur.base;
   const sheen = new THREE.Color(spec.sheenColor ?? (base[0] + base[1] + base[2] > 500 ? 0xffffff : 0xffffff)).multiplyScalar(0.9);
   const light = base[0] + base[1] + base[2] > 450;
-  return new THREE.MeshPhysicalMaterial({ map: tex, roughness: 0.92, metalness: 0, sheen: light ? 0.35 : 0.8, sheenRoughness: 0.8, sheenColor: sheen, envMapIntensity: light ? 0.25 : 0.4 });
+  const m = new THREE.MeshPhysicalMaterial({ map: tex, roughness: 0.92, metalness: 0, sheen: light ? 0.35 : 0.8, sheenRoughness: 0.8, sheenColor: sheen, envMapIntensity: light ? 0.25 : 0.4 });
+  m.userData.hookKey = 'fur'; m.userData.fuzz = new THREE.Color(light ? 0xffffff : (spec.sheenColor ?? 0xffffff)).multiplyScalar(light ? 0.18 : 0.28);
+  m.onBeforeCompile = (shader) => {   // soft, back-lit fur fringe along the silhouette
+    shader.uniforms.fuzzColor = { value: m.userData.fuzz };
+    shader.fragmentShader = shader.fragmentShader.replace('uniform vec3 diffuse;', 'uniform vec3 diffuse; uniform vec3 fuzzColor;')
+      .replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n  { float fr = pow(1.0 - clamp(dot(normalize(vViewPosition), normal), 0.0, 1.0), 2.6); diffuseColor.rgb = diffuseColor.rgb * (1.0 + fr * 0.55) + fuzzColor * fr; }');
+  };
+  return m;
 }
 
 class CatModel {

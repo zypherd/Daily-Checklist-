@@ -191,7 +191,7 @@ function wallClock(frameM, lx, ly) {
 
 // ─── The espresso bar ─────────────────────────────────────────────────────────
 function buildBar() {
-  const x0 = -5.7, x1 = 0.7, zf = -3.15, zb = -3.75, h = 0.95;   // counter from x0..x1, front face at zf
+  const x0 = -5.7, x1 = 0.7, zf = -2.95, zb = -3.55, h = 0.95;   // counter from x0..x1, front face at zf (0.55 m walkway behind it)
   const cx = (x0 + x1) / 2, len = x1 - x0;
   B.add(G.rbox(len + 0.1, 0.05, zf - zb + 0.15, 0.01), 'walnut', mat(cx, h - 0.025, (zf + zb) / 2 + 0.02));
   B.add(G.box(len, h - 0.05, zf - zb), 'darkwood', mat(cx, (h - 0.05) / 2, (zf + zb) / 2));
@@ -202,8 +202,8 @@ function buildBar() {
   addObstacle({ type: 'box', x0: x0, x1: x1, z0: ROOM.z0, z1: zb - 0.2, top: 2.6, kind: 'backbar', passable: false });
   // back bar: tiles, shelves with jars/cups/bottles, fridge-ish cabinet
   const tiles = new THREE.Mesh(G.plane(len + 0.2, 1.4), M.tile); tiles.position.set(cx, 1.6, ROOM.z0 + 0.01); tiles.receiveShadow = true; W.scene.add(tiles);
-  B.add(G.box(len, 0.9, 0.55), 'darkwood', mat(cx, 0.45, ROOM.z0 + 0.28));
-  B.add(G.box(len + 0.05, 0.04, 0.6), 'walnut', mat(cx, 0.92, ROOM.z0 + 0.3));
+  B.add(G.box(len, 0.9, 0.4), 'darkwood', mat(cx, 0.45, ROOM.z0 + 0.2));
+  B.add(G.box(len + 0.05, 0.04, 0.45), 'walnut', mat(cx, 0.92, ROOM.z0 + 0.225));
   [1.55, 2.05].forEach(y => B.add(G.box(len - 0.3, 0.035, 0.3), 'walnut', mat(cx, y, ROOM.z0 + 0.15)));
   for (let i = 0; i < 14; i++) { const x = x0 + 0.3 + i * 0.45; const jar = i % 3; if (jar === 0) BNS.add(G.cyl(0.06, 0.06, 0.2, 12), 'glassCase', mat(x, 1.67, ROOM.z0 + 0.15)); else if (jar === 1) BNS.add(G.lathe([[0, 0], [0.04, 0], [0.045, 0.16], [0.02, 0.2], [0.018, 0.28], [0, 0.28]], 12), i % 2 ? 'ceramicRose' : 'coffee', mat(x, 1.57, ROOM.z0 + 0.15)); else BNS.add(G.box(0.12, 0.16, 0.08), 'pot', mat(x, 1.65, ROOM.z0 + 0.15)); }
   for (let i = 0; i < 16; i++) cup(x0 + 0.35 + i * 0.38, 2.07, ROOM.z0 + 0.15, false, i % 4 === 0 ? 'ceramicRose' : 'ceramic', false);
@@ -212,7 +212,7 @@ function buildBar() {
   const menu = new THREE.Mesh(G.plane(3.15, 1.95), M.chalk); menu.position.set(-2.3, 2.6, ROOM.z0 + 0.06); W.scene.add(menu);
   addInteractBox('The menu — rose latte is the house special', -2.3, 2.6, ROOM.z0 + 0.06, 3.2, 2.0, 0.1, hoverOnly);
   // espresso machine (a two-group lever machine)
-  const mx = -3.4, mz = -3.5;
+  const mx = -3.4, mz = -3.32;
   B.add(G.rbox(0.9, 0.42, 0.5, 0.02), 'steel', mat(mx, h + 0.21, mz));
   B.add(G.box(0.9, 0.06, 0.5), 'black', mat(mx, h + 0.03, mz));
   B.add(G.rbox(0.94, 0.06, 0.54, 0.02), 'steel', mat(mx, h + 0.45, mz));

@@ -55,6 +55,10 @@ function buildWorld() {
   wallArt(right, 4.8, 1.85, 0, 0.95, 0.68); wallArt(right, 2.3, 1.7, 3, 0.6, 0.45); wallArt(right, 3.15, 1.75, 1, 0.5, 0.38);
   wallArt(back, 10.9, 1.55, 2, 0.6, 0.45); wallArt(left, 7.6, 1.8, 1, 0.7, 0.52); wallArt(left, 6.1, 1.65, 0, 0.6, 0.44);
   wallClock(back, 7.4, 2.35);
+  // ceiling fans (slow, always turning) and brass wall sconces
+  W.fans = []; [[-0.6, -1.3], [3.4, 1.6]].forEach(([fx, fz]) => { const g = new THREE.Group(); g.position.set(fx, ROOM.h - 0.02, fz); const rod = new THREE.Mesh(G.cyl(0.02, 0.02, 0.35, 8), M.black); rod.position.y = -0.17; g.add(rod); const motor = new THREE.Mesh(G.cyl(0.12, 0.1, 0.14, 16), M.black); motor.position.y = -0.4; g.add(motor); const hub = new THREE.Group(); hub.position.y = -0.46; g.add(hub); for (let i = 0; i < 4; i++) { const bl = new THREE.Mesh(G.box(0.62, 0.012, 0.13), M.walnut); bl.position.set(0.42, 0, 0); bl.rotation.z = -0.14; const arm = new THREE.Group(); arm.rotation.y = i * Math.PI / 2; arm.add(bl); hub.add(arm); bl.castShadow = true; } W.scene.add(g); W.fans.push(hub); });
+  const sconce = (frameM, lx, ly) => { const f = frameM.clone().multiply(mat(lx, ly, 0.02)); B.add(G.box(0.08, 0.16, 0.03), 'brass', f.clone().multiply(mat(0, 0, 0.015))); B.add(G.cyl(0.012, 0.012, 0.16, 8), 'brass', f.clone().multiply(mat(0, 0.1, 0.1, 0, { rx: -Math.PI / 2 }))); const sh = new THREE.Mesh(G.cyl(0.05, 0.09, 0.13, 20, true), M.shade); sh.applyMatrix4(f.clone().multiply(mat(0, 0.16, 0.16))); W.scene.add(sh); const b = new THREE.Mesh(G.sph(0.028, 10, 8), M.bulb); b.applyMatrix4(f.clone().multiply(mat(0, 0.13, 0.16))); W.scene.add(b); };
+  sconce(right, 6.1, 1.75); sconce(right, 1.2, 1.75); sconce(back, 10.2, 1.9); sconce(left, 5.2, 1.85);
   // light switch by the door
   B.add(G.box(0.08, 0.12, 0.015), 'trim', mat(-1.75, 1.25, z1 - 0.01)); const sw = new THREE.Mesh(G.box(0.03, 0.05, 0.02), M.trim); sw.position.set(-1.75, 1.25, z1 - 0.02); W.scene.add(sw); W.switchMesh = sw;
   addInteract({ label: 'Light switch', mesh: sw, onClick: () => toggleLights() });
@@ -63,7 +67,7 @@ function buildWorld() {
   spawnToy('ball', 0.2, 0.15, 'toyBall'); spawnToy('ball', -1.2, 2.7, 'toyBall2'); spawnToy('mouse', 3.6, 1.7, 'toyMouse');
   // merge static geometry
   B.build(W.scene); BNS.build(W.scene, { shadow: false });
-  buildSteam(); buildBird(); buildPedestrians();
+  buildSteam(); buildBird(); buildNPCs();
   // soft contact shadows under the furniture (cheap ambient occlusion)
   W.obstacles.forEach(o => { if (o.passable || o.kind === 'backbar' || o.kind === 'sill' || o.kind === 'ledge') return; const w = o.type === 'circle' ? o.r * 2.6 : (o.x1 - o.x0) * 1.35, d = o.type === 'circle' ? o.r * 2.6 : (o.z1 - o.z0) * 1.35; const cx = o.type === 'circle' ? o.x : (o.x0 + o.x1) / 2, cz = o.type === 'circle' ? o.z : (o.z0 + o.z1) / 2; const b = new THREE.Mesh(G.plane(w, d), M.blobAO); b.rotation.x = -Math.PI / 2; b.position.set(cx, 0.003, cz); b.renderOrder = 1; W.scene.add(b); });
 }
@@ -168,10 +172,11 @@ function updateAmbient(dt) {
   if (W.treeCanopies) W.treeCanopies.forEach((c, i) => { c.position.x += Math.sin(W.time * 0.8 + i) * 0.0006; c.rotation.z = Math.sin(W.time * 0.6 + i) * 0.03; });
   // dangling toy pendulum
   if (W.danglers) for (const d of W.danglers) { d.vel += (-9.8 / d.len * Math.sin(d.ang) - d.vel * 0.35) * dt; d.ang += d.vel * dt; d.ball.position.set(d.x + Math.sin(d.ang) * d.len, d.y - Math.cos(d.ang) * d.len, d.z); d.string.position.set(d.x + Math.sin(d.ang) * d.len / 2, d.y - Math.cos(d.ang) * d.len / 2, d.z); d.string.rotation.z = -d.ang; }
+  if (W.fans) W.fans.forEach((h, i) => { h.rotation.y += dt * (W.lightsOn ? 2.6 : 0.9) * (i ? 1 : -1); });
   // clock
   if (W.wallClock) { const h = W.dayTime % 12, m = (W.dayTime % 1) * 60; W.wallClock.h.rotation.z = -(h / 12) * TAU; W.wallClock.m.rotation.z = -(m / 60) * TAU; }
   // espresso machine
-  if (W.machine && W.machine.brewing > 0) { W.machine.brewing -= dt; if (W.machine.brewing <= 0) { playSfx('cupSet', W.machine); showToast('☕ A fresh cortado is waiting on the bar'); W.steamers.push({ x: -2.6, y: 1.04, z: -3.35, next: 0, temp: W.time + 70 }); cup(-2.6, 0.95, -3.35, false, 'ceramic'); BNS.build(W.scene, { shadow: false }); } }
+  if (W.machine && W.machine.brewing > 0) { W.machine.brewing -= dt; if (W.machine.brewing <= 0) { playSfx('cupSet', W.machine); showToast('☕ A fresh cortado is waiting on the bar'); W.steamers.push({ x: -2.6, y: 1.04, z: -3.15, next: 0, temp: W.time + 70 }); cup(-2.6, 0.95, -3.15, false, 'ceramic'); BNS.build(W.scene, { shadow: false }); } }
   for (let i = W.steamers.length - 1; i >= 0; i--) if (W.steamers[i].temp && W.time > W.steamers[i].temp) W.steamers.splice(i, 1);
   // bell dome bounce (visual): handled by sfx only (batched geometry)
   // sun-patch marker for debugging is intentionally absent

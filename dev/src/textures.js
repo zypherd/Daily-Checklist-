@@ -135,15 +135,16 @@ function furTexture(spec) {
 }
 const mix3 = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
 
-function eyeTexture(iris = '#8fbf5a', pupilW = 0.22) {
+function eyeTexture(iris = '#8fbf5a', pupilW = 0.22, irisR = 0.36) {
   const size = 256; const [c, ctx] = canvas2d(size, size);
   ctx.fillStyle = '#f2ede4'; ctx.fillRect(0, 0, size, size);
   const cx = size * 0.5, cy = size * 0.5;      // iris centered on the +z pole of the eye sphere (uv .5,.5)
-  const g = ctx.createRadialGradient(cx, cy, 10, cx, cy, size * 0.36); g.addColorStop(0, iris); g.addColorStop(0.7, iris); g.addColorStop(0.85, shade(iris, -35)); g.addColorStop(1, shade(iris, -55));
-  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(cx, cy, size * 0.36, size * 0.36, 0, 0, TAU); ctx.fill();
-  for (let i = 0; i < 60; i++) { ctx.strokeStyle = `rgba(0,0,0,${rand(0.05, 0.2)})`; ctx.beginPath(); const a = rand(TAU); ctx.moveTo(cx + Math.cos(a) * 16, cy + Math.sin(a) * 16); ctx.lineTo(cx + Math.cos(a) * size * 0.34, cy + Math.sin(a) * size * 0.34); ctx.stroke(); }
-  ctx.fillStyle = '#0c0a0a'; ctx.beginPath(); ctx.ellipse(cx, cy, size * pupilW * 0.5, size * 0.3, 0, 0, TAU); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.beginPath(); ctx.ellipse(cx - 22, cy - 28, 12, 8, -0.6, 0, TAU); ctx.fill();
+  const g = ctx.createRadialGradient(cx, cy, 10, cx, cy, size * irisR); g.addColorStop(0, shade(iris, 25)); g.addColorStop(0.6, iris); g.addColorStop(0.85, shade(iris, -35)); g.addColorStop(1, shade(iris, -70));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(cx, cy, size * irisR, size * irisR, 0, 0, TAU); ctx.fill();
+  for (let i = 0; i < 70; i++) { ctx.strokeStyle = `rgba(0,0,0,${rand(0.05, 0.22)})`; ctx.beginPath(); const a = rand(TAU); ctx.moveTo(cx + Math.cos(a) * 14, cy + Math.sin(a) * 14); ctx.lineTo(cx + Math.cos(a) * size * irisR * 0.95, cy + Math.sin(a) * size * irisR * 0.95); ctx.stroke(); }
+  ctx.fillStyle = '#0c0a0a'; ctx.beginPath(); ctx.ellipse(cx, cy, size * pupilW * 0.5, size * Math.min(0.3, irisR * 0.8), 0, 0, TAU); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.8)'; ctx.beginPath(); ctx.ellipse(cx - 20, cy - 24, 11, 7, -0.6, 0, TAU); ctx.fill();
+  const v = ctx.createRadialGradient(cx, cy, size * 0.3, cx, cy, size * 0.5); v.addColorStop(0, 'rgba(120,60,50,0)'); v.addColorStop(1, 'rgba(120,60,50,0.25)'); ctx.fillStyle = v; ctx.fillRect(0, 0, size, size);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 }
 function shade(hex, amt) { const n = parseInt(hex.slice(1), 16); const r = clamp((n >> 16) + amt, 0, 255), g = clamp(((n >> 8) & 255) + amt, 0, 255), b = clamp((n & 255) + amt, 0, 255); return `rgb(${r},${g},${b})`; }

@@ -17,7 +17,8 @@ function setupUI() {
   document.getElementById('btn-classic').onclick = () => { try { store.setItem('checklist_view_mode', 'classic'); } catch (e) {} location.href = location.pathname + '?classic'; };
   document.getElementById('btn-audio').onclick = () => { initAudio(); document.getElementById('audio-panel').classList.toggle('open'); document.getElementById('outfit-panel').classList.remove('open'); };
   document.getElementById('btn-outfit').onclick = () => toggleOutfitPanel();
-  document.querySelectorAll('#outfit-panel .of-btn').forEach(b => b.onclick = () => { W.avatar.setOutfit(b.dataset.outfit); syncOutfitUI(); showToast(b.dataset.outfit === 'work' ? 'Changed into work clothes' : 'Changed into casual clothes'); });
+  document.getElementById('btn-quality').onclick = () => cycleQuality();
+  document.querySelectorAll('#outfit-panel .of-btn').forEach(b => b.onclick = () => { W.avatar.setOutfit(b.dataset.outfit); syncOutfitUI(); showToast(b.dataset.outfit === 'work' ? 'Changed into work clothes' : b.dataset.outfit === 'beach' ? 'Changed into the black tank dress' : 'Changed into casual clothes'); });
   document.querySelectorAll('#of-slacks .of-sw').forEach(b => b.onclick = () => { W.avatar.setOutfit('work', b.dataset.slack); syncOutfitUI(); });
   document.querySelectorAll('#of-shirts .of-sw').forEach(b => b.onclick = () => { W.avatar.setOutfit('work', null, b.dataset.shirt); syncOutfitUI(); });
   syncOutfitUI();

@@ -8,7 +8,7 @@ def rd(n): return open(os.path.join(SRC, n)).read()
 
 css3d = rd('cafe3d.css')
 html3d = rd('cafe3d.html')
-js_parts = ['core.js','textures.js','room.js','exterior.js','props.js','nav.js','cat_model.js','cat_ai.js','avatar.js','world.js','player.js','audio.js','ui.js','main.js']
+js_parts = ['core.js','textures.js','room.js','post.js','exterior.js','props.js','nav.js','cat_model.js','cat_ai.js','avatar.js','npc.js','world.js','player.js','audio.js','ui.js','main.js']
 js3d = '\n'.join(f'// ═══════════ {p} ═══════════\n' + rd(p) for p in js_parts)
 
 out = orig

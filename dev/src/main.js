@@ -6,15 +6,16 @@ async function bootCafe() {
     loadStatus('Loading the 3D engine…', 5);
     const timeout = (ms) => new Promise((_, rej) => setTimeout(() => rej(new Error('Three.js download timed out')), ms));
     const [three, bgu, renv, rbg] = await Promise.race([Promise.all([import('three'), import('three/addons/utils/BufferGeometryUtils.js'), import('three/addons/environments/RoomEnvironment.js'), import('three/addons/geometries/RoundedBoxGeometry.js')]), timeout(25000)]);
-    THREE = three; mergeGeometries = bgu.mergeGeometries; RoomEnvironment = renv.RoomEnvironment; RoundedBoxGeometry = rbg.RoundedBoxGeometry;
+    THREE = three; window.THREE = three; mergeGeometries = bgu.mergeGeometries; RoomEnvironment = renv.RoomEnvironment; RoundedBoxGeometry = rbg.RoundedBoxGeometry;
+    loadStatus('Loading the render pipeline…', 12); await loadPostModules();
     const container = document.getElementById('cafe3d');
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    W.renderer = renderer; renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75)); renderer.setSize(window.innerWidth, window.innerHeight);
+    W.renderer = renderer; renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)); renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
     W.scene = new THREE.Scene(); W.scene.fog = new THREE.Fog(0xdcd3c2, 45, 320);
-    W.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 700);
-    const pmrem = new THREE.PMREMGenerator(renderer); W.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; W.scene.environmentIntensity = 0.45; pmrem.dispose();
+    W.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.08, 600);
+    W.scene.environmentIntensity = 0.5;   // the environment map is baked from the live sky (see post.js)
     W.clock = new THREE.Clock();
     loadStatus('Sanding the floorboards…', 20); await nextFrame(); await buildMaterials();
     loadStatus('Arranging the furniture…', 45); await nextFrame(); buildWorld();
@@ -25,6 +26,7 @@ async function bootCafe() {
     document.getElementById('hud-cats').textContent = W.cats.length + ' cats';
     loadStatus('Pulling the first shot…', 92); await nextFrame();
     setupPlayer(); setupUI(); updateDaylight(); updateCamLabel(); hint(); refreshTaskBoard();
+    loadStatus('Lighting the room…', 96); await nextFrame(); setupPost(); applyCSM(W.scene); updateDaylight(); setQuality(POST.quality);
     window.addEventListener('resize', onResize);
     W.active = true; window.Cafe3D.active = true;
     renderer.setAnimationLoop(frame);
@@ -37,7 +39,7 @@ async function bootCafe() {
     if (typeof enterClassicMode === 'function') enterClassicMode(err && err.message ? err.message : String(err));
   }
 }
-function onResize() { if (!W.renderer) return; W.camera.aspect = window.innerWidth / window.innerHeight; W.camera.updateProjectionMatrix(); W.renderer.setSize(window.innerWidth, window.innerHeight); }
+function onResize() { if (!W.renderer) return; W.camera.aspect = window.innerWidth / window.innerHeight; W.camera.updateProjectionMatrix(); W.renderer.setSize(window.innerWidth, window.innerHeight); resizePost(); if (POST.csm) POST.csm.updateFrustums(); }
 let slowFrames = 0, frameCount = 0;
 function frame() { stepFrame(Math.min(0.05, W.clock.getDelta())); }
 window.Cafe3D.step = (n = 1, dt = 1 / 60) => { for (let i = 0; i < n; i++) stepFrame(dt); };
@@ -46,11 +48,11 @@ function stepFrame(dt) {
   W.dayTime = (W.dayTime + W.daySpeed * dt) % 24;   // daySpeed = game-hours per real second
   updateDaylight();
   for (const c of W.cats) c.update(dt);
-  updateToys(dt); updateSteam(dt); updateBird(dt); updatePedestrians(dt); updateAmbient(dt);
+  updateToys(dt); updateSteam(dt); updateBird(dt); updateNPCs(dt); updateAmbient(dt);
   updatePlayer(dt); updateAudioListener(); updateUI(dt);
   if (W.ceilingGroup) W.ceilingGroup.visible = W.camera.position.y < ROOM.h + 0.05;
-  // adaptive quality: if the machine struggles, drop resolution & shadow size once
-  if (frameCount > 120 && W.quality === 'high') { if (dt > 0.04) slowFrames++; else slowFrames = Math.max(0, slowFrames - 1); if (slowFrames > 90) { W.quality = 'medium'; W.renderer.setPixelRatio(1); W.sun.shadow.mapSize.set(1024, 1024); W.sun.shadow.map && W.sun.shadow.map.dispose(); W.sun.shadow.map = null; console.log('café: switched to medium quality'); } }
-  W.renderer.render(W.scene, W.camera);
+  // adaptive quality: if the machine struggles, step the pipeline down (ultra → high → medium) once per 8 s at most
+  if (frameCount > 150 && POST.quality !== 'medium') { if (dt > 0.042) slowFrames++; else slowFrames = Math.max(0, slowFrames - 2); if (slowFrames > 120) { slowFrames = -300; setQuality(POST.quality === 'ultra' ? 'high' : 'medium'); console.log('café: graphics stepped down to', POST.quality); } }
+  renderFrame(dt);
 }
 bootCafe();

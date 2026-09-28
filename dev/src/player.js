@@ -37,6 +37,7 @@ function setupPlayer() {
     if (k === 't') throwNearestToy();
     if (k === 'l') toggleLights();
     if (k === 'o') toggleOutfitPanel();
+    if (k === 'g') cycleQuality();
     if (k === '[') { W.daySpeed = clamp(W.daySpeed / 2, 1 / 800, 1 / 3); showToast('Day speed: ' + describeDaySpeed()); }
     if (k === ']') { W.daySpeed = clamp(W.daySpeed * 2, 1 / 800, 1 / 3); showToast('Day speed: ' + describeDaySpeed()); }
     if (k === 'escape') { selectCat(null); closeHelp(); }

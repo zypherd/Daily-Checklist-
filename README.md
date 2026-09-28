@@ -1,6 +1,6 @@
 # Daily Checklist — The Rose Teacup Café
 
-A daily checklist that lives inside a small, living 3D coffee shop on a beach resort terrace — pool, palms, thatched huts and the ocean outside the windows. Five cats with their own
+A daily checklist that lives inside a small, living 3D coffee shop on a beach resort terrace — pool, palms, thatched huts, people on the sand and the ocean outside the windows. Rendered with cascaded shadows, ambient occlusion, bloom, sky-based reflections, sun shafts with drifting dust, and a film-style finish. Five cats with their own
 personalities wander, nap, climb, play and greet each other while you work through your day's
 tasks. Still a single self-contained `index.html` — no build step, no server, no backend.
 
@@ -48,9 +48,15 @@ imports, so it works from Pages, from a local server, or straight from disk.
 
 ## You
 
-You explore as a 5'4" woman with curly dark-red hair and blue eyes (black yoga pants and a white crop top,
-or a business-casual button-up with slacks — press `O`). First person shows your own body when you look
-down; third person follows her over the shoulder; orbit view looks over the whole café and terrace.
+You explore as a slim 5'4" woman modelled on a reference photo: fair warm skin, long wavy burgundy hair swept
+behind one ear with a pink plumeria, blue eyes, thin arched brows and a soft smile. Outfits (`O`): black yoga
+pants + white crop top, a business-casual button-up with slacks (beige / black / blue / pink), or the black
+tank dress from the photo. First person shows your own body when you look down; third person follows her
+over the shoulder; orbit view looks over the whole café and terrace. A barista works the bar, beach-goers
+stroll the shore and sunbathe under the huts, gulls circle over the water.
+
+Graphics quality (`G`): Ultra (ambient occlusion + MSAA), High, Medium; it steps down automatically if the
+machine struggles.
 
 ## How the cats work
 

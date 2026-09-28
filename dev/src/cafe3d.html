@@ -17,6 +17,7 @@
   <div class="hud-btns">
     <button class="hud-btn" id="btn-panel" title="Open the checklist">📋 Checklist <span class="kbd">Tab</span></button>
     <button class="hud-btn" id="btn-camera" title="Switch camera mode">🎥 <span id="cam-mode-label">First person</span> <span class="kbd">V</span></button>
+    <button class="hud-btn" id="btn-outfit" title="Change outfit">👗 Outfit <span class="kbd">O</span></button>
     <button class="hud-btn" id="btn-audio" title="Sound settings">🔈 Sound <span class="kbd">M</span></button>
     <button class="hud-btn" id="btn-help" title="Controls">? Help <span class="kbd">H</span></button>
   </div>
@@ -29,6 +30,26 @@
   <label>Cats <input type="range" id="vol-cats" min="0" max="100" value="80"></label>
   <label>Mute <input type="checkbox" id="vol-mute"></label>
   <div class="ap-note">All sound is synthesized live in your browser — no recordings, nothing to license. Sound starts after your first click.</div>
+</div>
+<div id="outfit-panel">
+  <div class="ap-title">Wardrobe</div>
+  <div class="of-row"><button class="of-btn" data-outfit="casual">Casual · yoga pants &amp; white crop top</button></div>
+  <div class="of-row"><button class="of-btn" data-outfit="work">Work · button-up shirt &amp; slacks</button></div>
+  <div class="of-label">Slacks</div>
+  <div class="of-row of-swatches" id="of-slacks">
+    <button class="of-sw" data-slack="beige" style="background:#cdb99a" title="Beige"></button>
+    <button class="of-sw" data-slack="black" style="background:#1c1b1e" title="Black"></button>
+    <button class="of-sw" data-slack="blue" style="background:#2c4a7a" title="Blue"></button>
+    <button class="of-sw" data-slack="pink" style="background:#e6a3b8" title="Pink"></button>
+  </div>
+  <div class="of-label">Shirt</div>
+  <div class="of-row of-swatches" id="of-shirts">
+    <button class="of-sw" data-shirt="white" style="background:#f7f5f2" title="White"></button>
+    <button class="of-sw" data-shirt="cream" style="background:#f0e6d2" title="Cream"></button>
+    <button class="of-sw" data-shirt="lightblue" style="background:#bdd3ea" title="Light blue"></button>
+    <button class="of-sw" data-shirt="black" style="background:#1a191c" title="Black"></button>
+  </div>
+  <div class="ap-note">Press <b>V</b> to switch to third person and see her.</div>
 </div>
 <div id="hud-hint">Click the café to look around · WASD walk · Tab checklist · H help</div>
 <div id="crosshair"></div>
@@ -58,7 +79,8 @@
       <div class="hk"><span>Release the mouse</span><kbd>Esc</kbd></div>
       <div class="hk"><span>Walk</span><kbd>W A S D</kbd> </div>
       <div class="hk"><span>Run / crouch to cat level</span><kbd>Shift</kbd> <kbd>C</kbd></div>
-      <div class="hk"><span>Switch camera (first person ↔ orbit)</span><kbd>V</kbd></div>
+      <div class="hk"><span>Switch camera (first person → third person → orbit)</span><kbd>V</kbd></div>
+      <div class="hk"><span>Change your outfit</span><kbd>O</kbd></div>
       <div class="hk"><span>Orbit mode: rotate / zoom / pan</span><kbd>drag · wheel · WASD</kbd></div>
       <div class="hk"><span>Reset the camera</span><kbd>R</kbd></div>
       <div class="hk"><span>Cycle to the next cat</span><kbd>N</kbd></div>

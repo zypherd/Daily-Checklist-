@@ -24,18 +24,19 @@ const hoverOnly = () => {};
 
 function chair(x, z, ry = 0, { seatKey = 'chairSeat', cushion = true } = {}) {
   const f = mat(x, 0, z, ry); const sh = 0.45;
-  B.add(G.cyl(0.21, 0.19, 0.035, 20), 'walnut', f.clone().multiply(mat(0, sh - 0.0175, 0)));
-  if (cushion) B.add(G.cyl(0.19, 0.19, 0.03, 20), seatKey, f.clone().multiply(mat(0, sh + 0.015, 0)));
+  B.add(G.cyl(0.21, 0.19, 0.035, 24), 'walnut', f.clone().multiply(mat(0, sh - 0.0175, 0)));
+  if (cushion) B.add(G.lathe([[0, 0], [0.17, 0], [0.19, 0.015], [0.185, 0.035], [0.15, 0.045], [0, 0.048]], 24), seatKey, f.clone().multiply(mat(0, sh, 0)));
   const legs = [[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]];
   legs.forEach(([lx, lz]) => B.add(G.cyl(0.016, 0.02, sh - 0.03, 8), 'walnut', f.clone().multiply(mat(lx * 1.05, (sh - 0.03) / 2, lz * 1.05, 0, { rx: -lz * 0.18, rz: lx * 0.18 }))));
   // stretchers
   B.add(G.cyl(0.01, 0.01, 0.3, 6), 'walnut', f.clone().multiply(mat(0, 0.18, -0.15, 0, { rz: Math.PI / 2 })));
   B.add(G.cyl(0.01, 0.01, 0.3, 6), 'walnut', f.clone().multiply(mat(0, 0.18, 0.15, 0, { rz: Math.PI / 2 })));
-  // bentwood back: two posts + curved hoop (partial cylinder shell) + a splat
-  B.add(G.cyl(0.016, 0.018, 0.5, 8), 'walnut', f.clone().multiply(mat(-0.17, sh + 0.25, -0.16, 0, { rx: 0.12 })));
-  B.add(G.cyl(0.016, 0.018, 0.5, 8), 'walnut', f.clone().multiply(mat(0.17, sh + 0.25, -0.16, 0, { rx: 0.12 })));
-  B.add(new THREE.CylinderGeometry(0.2, 0.2, 0.05, 20, 1, true, Math.PI * 0.55, Math.PI * 0.9), 'walnut', f.clone().multiply(mat(0, sh + 0.5, -0.02, Math.PI, { rx: 0.12 })));
-  B.add(new THREE.CylinderGeometry(0.2, 0.2, 0.18, 20, 1, true, Math.PI * 0.62, Math.PI * 0.76), 'walnut', f.clone().multiply(mat(0, sh + 0.35, -0.02, Math.PI, { rx: 0.12 })));
+  // bentwood back: two leaning posts, two solid steam-bent hoops and three spindles (all solid tubes — no open shells)
+  B.add(G.cyl(0.016, 0.019, 0.52, 10), 'walnut', f.clone().multiply(mat(-0.145, sh + 0.25, -0.15, 0, { rx: 0.12 })));
+  B.add(G.cyl(0.016, 0.019, 0.52, 10), 'walnut', f.clone().multiply(mat(0.145, sh + 0.25, -0.15, 0, { rx: 0.12 })));
+  const hoop = (y, zc) => B.add(G.torus(0.16, 0.016, 8, 22, Math.PI * 0.7), 'walnut', f.clone().multiply(mat(0, y, zc, Math.PI * 0.15, { rx: -Math.PI / 2 })));
+  hoop(sh + 0.5, -0.12); hoop(sh + 0.3, -0.115);
+  [-0.08, 0, 0.08].forEach(sx => B.add(G.cyl(0.009, 0.009, 0.2, 6), 'walnut', f.clone().multiply(mat(sx, sh + 0.4, -0.12 - Math.sqrt(0.16 * 0.16 - sx * sx), 0, { rx: 0.1 }))));
   addObstacle({ type: 'box', x0: x - 0.22, x1: x + 0.22, z0: z - 0.22, z1: z + 0.22, top: sh + 0.03, kind: 'chair' });
   const fwd = { x: Math.sin(ry), z: Math.cos(ry) };   // chair faces local +Z
   const p = addPerch({ name: 'a chair', kind: 'chair', x, z, hw: 0.14, hd: 0.14, y: sh + 0.03, comfort: 0.55, ry, approach: [{ x: x + fwd.x * 0.6, z: z + fwd.z * 0.6 }, { x: x - fwd.z * 0.6, z: z + fwd.x * 0.6 }, { x: x + fwd.z * 0.6, z: z - fwd.x * 0.6 }] });

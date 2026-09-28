@@ -153,6 +153,22 @@
   #audio-panel .ap-title { font-family: 'DM Serif Display', serif; font-size: 0.95rem; margin-bottom: 4px; }
   #audio-panel .ap-note { font-size: 0.62rem; color: #9d8f85; margin-top: 6px; line-height: 1.4; }
 
+  #outfit-panel {
+    position: fixed; top: 118px; left: 16px; z-index: 27; display: none; width: 270px;
+    background: rgba(17,15,22,0.88); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px 14px; color: #f0ece8; font-family: Inter, sans-serif; font-size: 0.7rem;
+  }
+  #outfit-panel.open { display: block; }
+  #outfit-panel .ap-title { font-family: 'DM Serif Display', serif; font-size: 0.95rem; margin-bottom: 8px; }
+  #outfit-panel .of-row { display: flex; gap: 6px; margin: 4px 0; }
+  #outfit-panel .of-btn { flex: 1; text-align: left; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #f0ece8; border-radius: 8px; padding: 7px 10px; font-family: Inter, sans-serif; font-size: 0.7rem; cursor: pointer; }
+  #outfit-panel .of-btn:hover { background: rgba(255,255,255,0.12); }
+  #outfit-panel .of-btn.active { border-color: rgba(217,140,160,0.9); background: rgba(217,140,160,0.25); }
+  #outfit-panel .of-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #c8b8a8; margin-top: 8px; }
+  #outfit-panel .of-sw { width: 30px; height: 30px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); cursor: pointer; }
+  #outfit-panel .of-sw.active { border-color: #f4c2cf; transform: scale(1.12); }
+  #outfit-panel .ap-note { font-size: 0.62rem; color: #9d8f85; margin-top: 8px; }
+
   /* Loading screen */
   #cafe-loading {
     position: fixed; inset: 0; z-index: 100; background: radial-gradient(ellipse at 50% 40%, #2a1f24 0%, #0f0d13 70%);

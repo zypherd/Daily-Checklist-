@@ -64,6 +64,8 @@ function buildWorld() {
   // merge static geometry
   B.build(W.scene); BNS.build(W.scene, { shadow: false });
   buildSteam(); buildBird(); buildPedestrians();
+  // soft contact shadows under the furniture (cheap ambient occlusion)
+  W.obstacles.forEach(o => { if (o.passable || o.kind === 'backbar' || o.kind === 'sill' || o.kind === 'ledge') return; const w = o.type === 'circle' ? o.r * 2.6 : (o.x1 - o.x0) * 1.35, d = o.type === 'circle' ? o.r * 2.6 : (o.z1 - o.z0) * 1.35; const cx = o.type === 'circle' ? o.x : (o.x0 + o.x1) / 2, cz = o.type === 'circle' ? o.z : (o.z0 + o.z1) / 2; const b = new THREE.Mesh(G.plane(w, d), M.blobAO); b.rotation.x = -Math.PI / 2; b.position.set(cx, 0.003, cz); b.renderOrder = 1; W.scene.add(b); });
 }
 
 // ─── Toys: light rigid-ish bodies (gravity, bounce, rolling friction, walls & furniture) ──
@@ -109,11 +111,11 @@ function updateSteam(dt) {
 
 // ─── A bird that visits the outside window ledge ─────────────────────────────
 function buildBird() {
-  const g = new THREE.Group(); const body = new THREE.Mesh(G.sph(0.045, 10, 8), M.bird); body.scale.set(1.5, 1, 1); g.add(body);
-  const head = new THREE.Mesh(G.sph(0.03, 10, 8), M.bird); head.position.set(0.06, 0.035, 0); g.add(head);
+  const g = new THREE.Group(); const body = new THREE.Mesh(G.sph(0.05, 10, 8), M.gull); body.scale.set(1.6, 1, 1); g.add(body);
+  const head = new THREE.Mesh(G.sph(0.032, 10, 8), M.gull); head.position.set(0.07, 0.04, 0); g.add(head);
   const beak = new THREE.Mesh(G.cyl(0.001, 0.008, 0.025, 5), M.brass); beak.position.set(0.095, 0.03, 0); beak.rotation.z = -Math.PI / 2; g.add(beak);
-  const tail = new THREE.Mesh(G.box(0.05, 0.008, 0.03), M.birdWing); tail.position.set(-0.07, 0.01, 0); g.add(tail);
-  const wings = [-1, 1].map(s => { const w = new THREE.Mesh(G.plane(0.09, 0.05), M.birdWing); w.rotation.x = -Math.PI / 2; const p = new THREE.Group(); p.position.set(0, 0.02, s * 0.03); w.position.z = s * 0.045; p.add(w); g.add(p); p.userData.s = s; return p; });
+  const tail = new THREE.Mesh(G.box(0.06, 0.008, 0.04), M.gullWing); tail.position.set(-0.07, 0.01, 0); g.add(tail);
+  const wings = [-1, 1].map(s => { const w = new THREE.Mesh(G.plane(0.12, 0.06), M.gullWing); w.rotation.x = -Math.PI / 2; const p = new THREE.Group(); p.position.set(0, 0.02, s * 0.03); w.position.z = s * 0.045; p.add(w); g.add(p); p.userData.s = s; return p; });
   g.visible = false; W.scene.add(g);
   W.bird = { g, wings, state: 'away', t: rand(20, 45), landed: false, pos: new THREE.Vector3(), from: new THREE.Vector3(), to: new THREE.Vector3(), hopT: 0 };
 }
@@ -136,8 +138,8 @@ function updateBird(dt) {
 
 // ─── Passers-by on the sidewalk ───────────────────────────────────────────────
 function buildPedestrians() {
-  const cols = [0x4a5568, 0x8b5e3c, 0x2f4f6f, 0x7a3b4f, 0x556b2f, 0xa0522d];
-  for (let i = 0; i < 4; i++) {
+  const cols = [0xf2d6c2, 0x7fb7d9, 0xe98f7a, 0xf6e6b4, 0x9ad0b0, 0xf0f0f0];
+  for (let i = 0; i < 6; i++) {
     const g = new THREE.Group(); const c = cols[i % cols.length]; const m = new THREE.MeshStandardMaterial({ color: c, roughness: 0.9 });
     const torso = new THREE.Mesh(G.cap(0.16, 0.5, 8), m); torso.position.y = 1.15; g.add(torso);
     const head = new THREE.Mesh(G.sph(0.11, 10, 8), new THREE.MeshStandardMaterial({ color: 0xd8b39a, roughness: 0.8 })); head.position.y = 1.62; g.add(head);
@@ -150,8 +152,8 @@ function buildPedestrians() {
 }
 function updatePedestrians(dt) {
   for (const p of W.pedestrians) {
-    if (!p.active) { p.t -= dt; if (p.t < 0) { p.active = true; p.dir = Math.random() < 0.5 ? 1 : -1; const side = Math.random() < 0.25 ? 'left' : 'front'; p.side = side; if (side === 'front') p.pos.set(-15 * p.dir, 0, ROOM.z1 + rand(1.2, 2.6)); else p.pos.set(ROOM.x0 - rand(1.2, 2.6), 0, -15 * p.dir); p.g.visible = true; p.speed = rand(0.9, 1.5); } continue; }
-    if (p.side === 'front') { p.pos.x += p.dir * p.speed * dt; p.g.rotation.y = p.dir > 0 ? Math.PI / 2 : -Math.PI / 2; if (Math.abs(p.pos.x) > 16) { p.active = false; p.g.visible = false; p.t = rand(12, 50); } }
+    if (!p.active) { p.t -= dt; if (p.t < 0) { p.active = true; p.dir = Math.random() < 0.5 ? 1 : -1; const side = Math.random() < 0.3 ? 'left' : Math.random() < 0.5 ? 'deck' : 'shore'; p.side = side; const lim = side === 'shore' ? 60 : 16; p.lim = lim; if (side === 'deck') p.pos.set(-lim * p.dir, 0, ROOM.z1 + rand(2.0, 4.0)); else if (side === 'shore') p.pos.set(-lim * p.dir, 0, EXT.shoreZ - rand(2, 5)); else p.pos.set(ROOM.x0 - rand(1.2, 2.8), 0, -15 * p.dir); p.g.visible = true; p.speed = rand(0.8, 1.4); } continue; }
+    if (p.side !== 'left') { p.pos.x += p.dir * p.speed * dt; p.g.rotation.y = p.dir > 0 ? Math.PI / 2 : -Math.PI / 2; if (Math.abs(p.pos.x) > p.lim) { p.active = false; p.g.visible = false; p.t = rand(10, 40); } }
     else { p.pos.z += p.dir * p.speed * dt; p.g.rotation.y = p.dir > 0 ? 0 : Math.PI; if (Math.abs(p.pos.z) > 16) { p.active = false; p.g.visible = false; p.t = rand(12, 50); } }
     p.phase += dt * p.speed * 4.2; p.legs.forEach((l, i) => l.rotation.x = Math.sin(p.phase + i * Math.PI) * 0.5); p.arms.forEach((a, i) => a.rotation.x = Math.sin(p.phase + i * Math.PI + Math.PI) * 0.35);
     p.g.position.copy(p.pos); p.g.position.y = Math.abs(Math.sin(p.phase)) * 0.03;
@@ -160,6 +162,7 @@ function updatePedestrians(dt) {
 
 // ─── Small ambient systems ────────────────────────────────────────────────────
 function updateAmbient(dt) {
+  updateExterior(dt);
   // plants sway
   if (W.plants) for (const g of W.plants) { const rus = g.userData.rustle || 0; if (rus > 0) g.userData.rustle = Math.max(0, rus - dt * 0.9); g.children.forEach(st => { st.rotation.x = st.userData.baseX + Math.sin(W.time * 0.9 + st.userData.sway) * 0.025 + Math.sin(W.time * 14 + st.userData.sway) * 0.12 * rus; st.rotation.z = Math.sin(W.time * 0.7 + st.userData.sway * 2) * 0.02 + Math.sin(W.time * 17 + st.userData.sway) * 0.1 * rus; }); }
   if (W.treeCanopies) W.treeCanopies.forEach((c, i) => { c.position.x += Math.sin(W.time * 0.8 + i) * 0.0006; c.rotation.z = Math.sin(W.time * 0.6 + i) * 0.03; });

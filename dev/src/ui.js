@@ -15,7 +15,12 @@ function setupUI() {
   document.getElementById('help-close').onclick = () => closeHelp();
   document.getElementById('help-overlay').addEventListener('click', e => { if (e.target.id === 'help-overlay') closeHelp(); });
   document.getElementById('btn-classic').onclick = () => { try { store.setItem('checklist_view_mode', 'classic'); } catch (e) {} location.href = location.pathname + '?classic'; };
-  document.getElementById('btn-audio').onclick = () => { initAudio(); document.getElementById('audio-panel').classList.toggle('open'); };
+  document.getElementById('btn-audio').onclick = () => { initAudio(); document.getElementById('audio-panel').classList.toggle('open'); document.getElementById('outfit-panel').classList.remove('open'); };
+  document.getElementById('btn-outfit').onclick = () => toggleOutfitPanel();
+  document.querySelectorAll('#outfit-panel .of-btn').forEach(b => b.onclick = () => { W.avatar.setOutfit(b.dataset.outfit); syncOutfitUI(); showToast(b.dataset.outfit === 'work' ? 'Changed into work clothes' : 'Changed into casual clothes'); });
+  document.querySelectorAll('#of-slacks .of-sw').forEach(b => b.onclick = () => { W.avatar.setOutfit('work', b.dataset.slack); syncOutfitUI(); });
+  document.querySelectorAll('#of-shirts .of-sw').forEach(b => b.onclick = () => { W.avatar.setOutfit('work', null, b.dataset.shirt); syncOutfitUI(); });
+  syncOutfitUI();
   ['master', 'ambience', 'music', 'cats'].forEach(k => { const el = document.getElementById('vol-' + k); el.value = Math.round(AU.vols[k] * 100); el.oninput = () => { AU.vols[k] = el.value / 100; applyVolumes(); }; });
   document.getElementById('vol-mute').onchange = e => { AU.muted = e.target.checked; applyVolumes(); updateAudioBtn(); };
   document.getElementById('cc-close').onclick = () => selectCat(null);
@@ -33,6 +38,8 @@ function setupUI() {
   document.addEventListener('visibilitychange', () => { if (!AU.ctx) return; if (document.hidden) AU.ctx.suspend(); else AU.ctx.resume(); });
   updateAudioBtn();
 }
+function toggleOutfitPanel() { const p = document.getElementById('outfit-panel'); p.classList.toggle('open'); document.getElementById('audio-panel').classList.remove('open'); if (p.classList.contains('open')) { if (document.pointerLockElement) document.exitPointerLock(); if (PL.mode === 'fp') toggleCameraMode('tp'); } }
+function syncOutfitUI() { const a = W.avatar; document.querySelectorAll('#outfit-panel .of-btn').forEach(b => b.classList.toggle('active', b.dataset.outfit === a.outfit)); document.querySelectorAll('#of-slacks .of-sw').forEach(b => b.classList.toggle('active', b.dataset.slack === a.slack)); document.querySelectorAll('#of-shirts .of-sw').forEach(b => b.classList.toggle('active', b.dataset.shirt === a.shirt)); }
 function updateAudioBtn() { const b = document.getElementById('btn-audio'); if (b) b.innerHTML = (AU.muted ? '🔇 Muted' : '🔈 Sound') + ' <span class="kbd">M</span>'; }
 function toggleHelp() { const h = document.getElementById('help-overlay'); h.classList.toggle('open'); if (h.classList.contains('open') && document.pointerLockElement) document.exitPointerLock(); }
 function closeHelp() { document.getElementById('help-overlay').classList.remove('open'); }

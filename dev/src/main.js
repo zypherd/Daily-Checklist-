@@ -12,8 +12,8 @@ async function bootCafe() {
     W.renderer = renderer; renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75)); renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05; renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
-    W.scene = new THREE.Scene(); W.scene.fog = new THREE.Fog(0xdcd3c2, 28, 90);
-    W.camera = new THREE.PerspectiveCamera(68, window.innerWidth / window.innerHeight, 0.05, 120);
+    W.scene = new THREE.Scene(); W.scene.fog = new THREE.Fog(0xdcd3c2, 45, 320);
+    W.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.05, 700);
     const pmrem = new THREE.PMREMGenerator(renderer); W.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture; W.scene.environmentIntensity = 0.45; pmrem.dispose();
     W.clock = new THREE.Clock();
     loadStatus('Sanding the floorboards…', 20); await nextFrame(); await buildMaterials();

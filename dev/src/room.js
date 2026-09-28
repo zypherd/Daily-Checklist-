@@ -110,6 +110,7 @@ async function buildMaterials() {
   M.foliage = std({ color: 0x4f8a3e, roughness: 0.9 });
   M.lamp = std({ color: 0x2a2a2e, roughness: 0.5, metalness: 0.6 });
   M.blob = new THREE.MeshBasicMaterial({ map: radialTexture(), transparent: true, depthWrite: false, opacity: 0.55 });
+  M.blobAO = new THREE.MeshBasicMaterial({ map: radialTexture(128, 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false, opacity: 0.5 });
   M.steam = new THREE.SpriteMaterial({ map: radialTexture(64, 'rgba(255,255,255,0.6)', 'rgba(255,255,255,0)'), transparent: true, depthWrite: false, opacity: 0.35 });
   M.person = std({ color: 0x334, roughness: 0.9 });
   M.bird = std({ color: 0x8b5a3c, roughness: 0.9 });
@@ -218,36 +219,6 @@ function buildSky() {
   const sky = new THREE.Mesh(geo, mat_); sky.name = 'sky'; W.sky = sky; W.scene.add(sky);
 }
 
-function buildExterior() {
-  const { z1, x0, x1 } = ROOM; const s = new THREE.Group(); s.name = 'exterior'; W.scene.add(s);
-  const addm = (geo, m, x, y, z, ry = 0) => { const me = new THREE.Mesh(geo, m); me.position.set(x, y, z); me.rotation.y = ry; me.receiveShadow = true; me.castShadow = false; s.add(me); return me; };
-  addm(G.box(40, 0.02, 3.4), M.sidewalk, 0, 0.0, z1 + 1.95);         // sidewalk in front
-  addm(G.box(40, 0.02, 20), M.road, 0, -0.01, z1 + 13.6);          // road
-  addm(G.box(3.4, 0.02, 40), M.sidewalk, x0 - 1.95, 0.0, 0);         // sidewalk left side
-  addm(G.box(20, 0.02, 40), M.road, x0 - 13.6, -0.01, 0);
-  // buildings across the street
-  const bl = [[-16, 9, 12, 0], [-5, 12, 10, 1], [6, 8, 14, 2], [16, 11, 9, 0], [-22, 7, 9, 1]];
-  bl.forEach(([bx, bh, bw, mi], i) => {
-    addm(G.box(bw, bh, 8), M.building[mi], bx, bh / 2, z1 + 20);
-    for (let r = 0; r < Math.floor(bh / 2.6); r++) for (let cI = 0; cI < Math.floor(bw / 2.2); cI++) {
-      const wm = new THREE.Mesh(G.box(1.1, 1.5, 0.05), M.bWindow); wm.position.set(bx - bw / 2 + 1.1 + cI * 2.2, 1.6 + r * 2.6, z1 + 16 - 0.03); s.add(wm); W.exteriorWindows = W.exteriorWindows || []; W.exteriorWindows.push(wm);
-    }
-  });
-  // left-side buildings (seen through the left window)
-  [[-14, 8, 10, 2], [-14, 10, 12, 1]].forEach(([bz, bh, bw, mi], i) => addm(G.box(8, bh, bw), M.building[mi], x0 - 18, bh / 2, bz + i * 14 - 8));
-  // trees
-  const tree = (x, z, sc = 1) => { addm(G.cyl(0.12 * sc, 0.18 * sc, 2.6 * sc, 8), M.trunk, x, 1.3 * sc, z); [[0, 3.2, 0, 1.4], [0.8, 2.7, 0.4, 1.0], [-0.7, 2.9, -0.3, 1.1], [0.2, 3.9, 0.3, 0.9]].forEach(([dx, dy, dz, r]) => { const fm = addm(G.sph(r * sc, 10, 8), M.foliage, x + dx * sc, dy * sc, z + dz * sc); fm.castShadow = true; W.treeCanopies = W.treeCanopies || []; W.treeCanopies.push(fm); }); };
-  tree(-3.5, z1 + 3.0, 1.1); tree(7.5, z1 + 3.2, 0.9); tree(x0 - 3.0, -2.5, 1.0); tree(x0 - 3.2, 3.5, 0.8);
-  // lamppost
-  addm(G.cyl(0.05, 0.07, 3.6, 8), M.lamp, 2.0, 1.8, z1 + 2.9); const lampHead = addm(G.sph(0.16, 10, 8), M.bulbOff, 2.0, 3.65, z1 + 2.9); W.lampHead = lampHead;
-  // bench outside
-  addm(G.box(1.5, 0.05, 0.4), M.darkwood, -0.5, 0.45, z1 + 1.2); addm(G.box(0.06, 0.45, 0.4), M.lamp, -1.2, 0.22, z1 + 1.2); addm(G.box(0.06, 0.45, 0.4), M.lamp, 0.2, 0.22, z1 + 1.2);
-  // outside window ledge (for the bird)
-  addm(G.box(3.2, 0.06, 0.25), M.trim, -2.1, 0.83, z1 + 0.38); addm(G.box(3.2, 0.06, 0.25), M.trim, 2.1 - 0.4, 0.83, z1 + 0.38);
-  // planters under windows
-  [-3.4, -0.9, 1.6].forEach(x => { addm(G.box(0.7, 0.35, 0.3), M.pot, x, 0.18, z1 + 0.45); for (let i = 0; i < 5; i++) addm(G.sph(0.09, 6, 5), i % 2 ? M.foliage : M.pastryPink, x - 0.25 + i * 0.12, 0.42, z1 + 0.45 + (i % 2) * 0.06); });
-}
-
 // ─── Lighting ─────────────────────────────────────────────────────────────────
 function buildLights() {
   const sun = new THREE.DirectionalLight(0xffffff, 3.2); sun.castShadow = true;
@@ -294,8 +265,7 @@ function updateDaylight() {
   W.pendants.forEach(p => { p.intensity = damp(p.intensity, want * dim * (p.userData.bulb ? 5.5 : 2.2), 3, W.dt); if (p.userData.bulb) { p.userData.bulb.material = want ? M.bulb : M.bulbOff; } });
   M.bulb.emissiveIntensity = 1.2 + 1.5 * dim;
   M.shadeInner.emissiveIntensity = want ? 0.15 + 0.35 * dim : 0;
-  if (W.exteriorWindows) M.bWindow.emissiveIntensity = night * 1.2;
-  if (W.lampHead) W.lampHead.material = night > 0.4 ? M.bulb : M.bulbOff;
+  if (W.exteriorWindows) M.bWindow.emissiveIntensity = night * 1.0;
   // sun patch on the floor: where the ray through the middle of the big front window lands (used by the sun-loving cat)
   if (sunDir.y > 0.08) {
     const wx = -3.7 + azim * 1.5, wy = 1.8, wz = ROOM.z1;   // window centre-ish

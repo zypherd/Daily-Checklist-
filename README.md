@@ -1,6 +1,6 @@
 # Daily Checklist — The Rose Teacup Café
 
-A daily checklist that lives inside a small, living 3D coffee shop. Five cats with their own
+A daily checklist that lives inside a small, living 3D coffee shop on a beach resort terrace — pool, palms, thatched huts and the ocean outside the windows. Five cats with their own
 personalities wander, nap, climb, play and greet each other while you work through your day's
 tasks. Still a single self-contained `index.html` — no build step, no server, no backend.
 
@@ -27,7 +27,8 @@ imports, so it works from Pages, from a local server, or straight from disk.
 | --- | --- |
 | Look around (first person) | click the café, then move the mouse · `Esc` releases |
 | Walk / run / crouch to cat level | `W A S D` · `Shift` · `C` |
-| Switch camera (first person ↔ orbit / overhead) | `V` · reset with `R` |
+| Switch camera (first person → third person → orbit / overhead) | `V` · reset with `R` |
+| Change your outfit (casual, or work shirt + slacks in beige / black / blue / pink) | `O` |
 | Orbit mode | drag to rotate · wheel to zoom · `WASD` pan · `Q`/`E` height |
 | Select a cat (info card, follow, offer a treat) | click the cat · `N` cycles cats |
 | Toss a toy · brew an espresso · ring the bell · light switch | click them · `T` · `L` |
@@ -44,6 +45,12 @@ imports, so it works from Pages, from a local server, or straight from disk.
 - Print view (multiple card sizes), "All Tasks & Schedules" overview with inline editing
 - Every completed task rings the service bell and tosses a treat onto the café floor — the cats
   come running. The chalk task board on the wall mirrors today's list and progress.
+
+## You
+
+You explore as a 5'4" woman with curly dark-red hair and blue eyes (black yoga pants and a white crop top,
+or a business-casual button-up with slacks — press `O`). First person shows your own body when you look
+down; third person follows her over the shoulder; orbit view looks over the whole café and terrace.
 
 ## How the cats work
 

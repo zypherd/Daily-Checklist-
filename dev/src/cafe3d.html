@@ -1,0 +1,84 @@
+<!-- ═══ 3D CAFÉ LAYER (only active when WebGL + Three.js are available; otherwise the classic café above is shown) ═══ -->
+<div id="cafe3d"></div>
+<div id="focus-vignette"></div>
+<div id="cafe-loading">
+  <div class="ld-cup">☕</div>
+  <div class="ld-title">The Rose Teacup</div>
+  <div class="ld-sub">Coffee · Cats · Your daily checklist</div>
+  <div class="ld-bar"><i id="ld-bar-fill"></i></div>
+  <div class="ld-status" id="ld-status">Warming up the espresso machine…</div>
+  <div class="ld-hint"><b>Click</b> the café to look around · <b>WASD</b> to walk · <b>Tab</b> opens your checklist · <b>V</b> switches camera · <b>H</b> for help</div>
+</div>
+<div id="hud">
+  <div class="hud-card">
+    <div class="shop-name">The Rose Teacup</div>
+    <div class="shop-sub"><span id="hud-clock">—</span><span id="hud-cats">5 cats</span><span id="hud-fps"></span></div>
+  </div>
+  <div class="hud-btns">
+    <button class="hud-btn" id="btn-panel" title="Open the checklist">📋 Checklist <span class="kbd">Tab</span></button>
+    <button class="hud-btn" id="btn-camera" title="Switch camera mode">🎥 <span id="cam-mode-label">First person</span> <span class="kbd">V</span></button>
+    <button class="hud-btn" id="btn-audio" title="Sound settings">🔈 Sound <span class="kbd">M</span></button>
+    <button class="hud-btn" id="btn-help" title="Controls">? Help <span class="kbd">H</span></button>
+  </div>
+</div>
+<div id="audio-panel">
+  <div class="ap-title">Café sound</div>
+  <label>Master <input type="range" id="vol-master" min="0" max="100" value="70"></label>
+  <label>Ambience <input type="range" id="vol-ambience" min="0" max="100" value="70"></label>
+  <label>Music <input type="range" id="vol-music" min="0" max="100" value="45"></label>
+  <label>Cats <input type="range" id="vol-cats" min="0" max="100" value="80"></label>
+  <label>Mute <input type="checkbox" id="vol-mute"></label>
+  <div class="ap-note">All sound is synthesized live in your browser — no recordings, nothing to license. Sound starts after your first click.</div>
+</div>
+<div id="hud-hint">Click the café to look around · WASD walk · Tab checklist · H help</div>
+<div id="crosshair"></div>
+<div id="hover-label"></div>
+<div id="cat-card">
+  <div class="cc-top">
+    <div class="cc-swatch" id="cc-swatch"></div>
+    <div><div class="cc-name" id="cc-name">—</div><div class="cc-breed" id="cc-breed">—</div></div>
+    <button class="cc-close" id="cc-close" title="Dismiss">✕</button>
+  </div>
+  <div class="cc-activity" id="cc-activity"></div>
+  <div class="cc-traits" id="cc-traits"></div>
+  <div class="cc-bio" id="cc-bio"></div>
+  <div class="cc-needs" id="cc-needs"></div>
+  <div class="cc-actions">
+    <button class="btn" id="cc-follow">🎥 Follow</button>
+    <button class="btn" id="cc-call">🐟 Offer a treat</button>
+  </div>
+</div>
+<div id="help-overlay">
+  <div class="help">
+    <h2>Exploring The Rose Teacup</h2>
+    <div class="help-sub">A small living café. Five cats live here; your daily checklist hangs on the wall behind the bar.</div>
+    <div class="help-grid">
+      <h3>Move &amp; look</h3>
+      <div class="hk"><span>Look around (first person)</span><kbd>click, then move mouse</kbd></div>
+      <div class="hk"><span>Release the mouse</span><kbd>Esc</kbd></div>
+      <div class="hk"><span>Walk</span><kbd>W A S D</kbd> </div>
+      <div class="hk"><span>Run / crouch to cat level</span><kbd>Shift</kbd> <kbd>C</kbd></div>
+      <div class="hk"><span>Switch camera (first person ↔ orbit)</span><kbd>V</kbd></div>
+      <div class="hk"><span>Orbit mode: rotate / zoom / pan</span><kbd>drag · wheel · WASD</kbd></div>
+      <div class="hk"><span>Reset the camera</span><kbd>R</kbd></div>
+      <div class="hk"><span>Cycle to the next cat</span><kbd>N</kbd></div>
+      <h3>Interact</h3>
+      <div class="hk"><span>Select a cat (info card, follow)</span><kbd>click cat</kbd></div>
+      <div class="hk"><span>Toss a toy ball for the cats</span><kbd>click a toy · or T</kbd></div>
+      <div class="hk"><span>Brew an espresso (the cats notice)</span><kbd>click the machine</kbd></div>
+      <div class="hk"><span>Sit down in a chair or on the couch</span><kbd>click a seat</kbd></div>
+      <div class="hk"><span>Toggle the pendant lights</span><kbd>click a light switch · L</kbd></div>
+      <div class="hk"><span>Open the task board</span><kbd>click the board · Tab</kbd></div>
+      <h3>Checklist</h3>
+      <div class="hk"><span>Open / close your checklist</span><kbd>Tab</kbd></div>
+      <div class="hk"><span>Every task you finish rings the bell and tosses a treat</span><kbd>🐟</kbd></div>
+      <div class="hk"><span>Sound settings</span><kbd>M</kbd></div>
+      <div class="hk"><span>Speed up the day / time of day</span><kbd>[ ]</kbd></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="btn-classic" title="Switch to the original 2D café">Classic 2D café</button>
+      <button class="btn btn-primary" id="help-close">Back to the café</button>
+    </div>
+  </div>
+</div>
+<button id="panel-tab" title="Open the checklist (Tab)">📋 Daily Checklist <span class="kbd">Tab</span></button>

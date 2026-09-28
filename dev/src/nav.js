@@ -23,7 +23,7 @@ function buildNavGrid() {
     let near = false;
     for (const o of W.obstacles) {
       if (o.top < 0.12) continue;                       // things a cat simply steps over (rugs, mats)
-      if (o.passable) continue;
+      if (o.passable || o.playerOnly) continue;
       if (o.type === 'circle') { const d = Math.hypot(x - o.x, z - o.z); if (d < o.r + pad) blocked = true; else if (d < o.r + pad + 0.3) near = true; }
       else { const dx = Math.max(o.x0 - x, 0, x - o.x1), dz = Math.max(o.z0 - z, 0, z - o.z1); const d = Math.hypot(dx, dz); if (d < pad) blocked = true; else if (d < pad + 0.3) near = true; }
     }
@@ -88,8 +88,8 @@ function lineFree(a, b) {
 }
 
 // push a circle (x,z,r) out of obstacles & walls; returns corrected position. `ignoreTop` lets a cat standing on furniture ignore it.
-function resolveCircle(x, z, r, { minTop = 0.12, ignore = null } = {}) {
-  x = clamp(x, ROOM.x0 + r + 0.05, ROOM.x1 - r - 0.05); z = clamp(z, ROOM.z0 + r + 0.05, ROOM.z1 - r - 0.05);
+function resolveCircle(x, z, r, { minTop = 0.12, ignore = null, bounds = true } = {}) {
+  if (bounds) { x = clamp(x, ROOM.x0 + r + 0.05, ROOM.x1 - r - 0.05); z = clamp(z, ROOM.z0 + r + 0.05, ROOM.z1 - r - 0.05); }   // cats & toys stay in the room; the player (bounds:false) may leave
   for (const o of W.obstacles) {
     if (o.top < minTop || o.passable || o === ignore) continue;
     if (o.type === 'circle') { const dx = x - o.x, dz = z - o.z; const d = Math.hypot(dx, dz) || 0.001; const min = o.r + r; if (d < min) { x = o.x + dx / d * min; z = o.z + dz / d * min; } }

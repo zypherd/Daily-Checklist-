@@ -62,6 +62,7 @@ function toggleCameraMode(mode) {
 function updateCamLabel() { const l = document.getElementById('cam-mode-label'); if (l) l.textContent = PL.mode === 'fp' ? (PL.seated ? 'Seated' : 'First person') : PL.mode === 'tp' ? 'Third person' : PL.follow ? 'Following ' + PL.follow.name : 'Orbit view'; }
 function resetCamera() { beginCamBlend(); PL.follow = null; if (PL.seated) standUp(); PL.x = 0.3; PL.z = 2.6; PL.yaw = Math.PI * 0.05; PL.pitch = -0.05; PL.tp.yaw = PL.yaw; PL.tp.pitch = 0.22; Object.assign(PL.orbit, { yaw: 0.6, pitch: 0.45, dist: 8.5, tx: -0.5, ty: 0.7, tz: 0.2 }); updateCamLabel(); }
 function beginCamBlend() { PL.blend = 0; PL.prevPos = W.camera.position.clone(); PL.prevQuat = W.camera.quaternion.clone(); }
+const inRoom = (x, z) => x > ROOM.x0 && x < ROOM.x1 && z > ROOM.z0 && z < ROOM.z1;
 function fpForward() { const yaw = PL.mode === 'tp' ? PL.tp.yaw : PL.yaw; return new THREE.Vector3(-Math.sin(yaw) * Math.cos(PL.pitch), Math.sin(PL.pitch), -Math.cos(yaw) * Math.cos(PL.pitch)); }
 
 function sitPlayer(x, z, ry, sh) {
@@ -74,7 +75,7 @@ function sitPlayer(x, z, ry, sh) {
 }
 function standUp() {
   if (!PL.seated) return; const s = PL.seated; beginCamBlend();
-  const f = { x: Math.sin(s.ry), z: Math.cos(s.ry) }; let nx = s.x + f.x * 0.7, nz = s.z + f.z * 0.7; [nx, nz] = resolveCircle(nx, nz, 0.28, { minTop: 0.25 }); PL.x = nx; PL.z = nz;
+  const f = { x: Math.sin(s.ry), z: Math.cos(s.ry) }; let nx = s.x + f.x * 0.7, nz = s.z + f.z * 0.7; [nx, nz] = resolveCircle(nx, nz, 0.28, { minTop: 0.25, bounds: false }); PL.x = nx; PL.z = nz;
   if (W.playerSeat && W.playerSeat.perch) W.playerSeat.perch.occupants.delete('player'); W.playerSeat = null; PL.seated = null; updateCamLabel(); hint();
 }
 
@@ -90,8 +91,8 @@ function updatePlayer(dt) {
       // camera forward is (-sin yaw, -cos yaw); right is (cos yaw, -sin yaw). fz = -1 means forward.
       const wx = (fx * cy + fz * sy) * sp, wz = (-fx * sy + fz * cy) * sp;
       PL.vx = damp(PL.vx, wx, 10, dt); PL.vz = damp(PL.vz, wz, 10, dt);
-      let nx = PL.x + PL.vx * dt, nz = PL.z + PL.vz * dt; [nx, nz] = resolveCircle(nx, nz, 0.26, { minTop: 0.25 });
-      nx = clamp(nx, ROOM.x0 + 0.4, ROOM.x1 - 0.4); nz = clamp(nz, ROOM.z0 + 0.4, ROOM.z1 - 0.4);
+      let nx = PL.x + PL.vx * dt, nz = PL.z + PL.vz * dt; [nx, nz] = resolveCircle(nx, nz, 0.26, { minTop: 0.25, bounds: false });
+      nx = clamp(nx, -34, 34); nz = clamp(nz, -11.5, EXT.shoreZ + 1.4);   // the resort is yours to explore; the walls, pool and palms are obstacles
       PL.moveSpeed = Math.hypot(nx - PL.x, nz - PL.z) / Math.max(dt, 1e-4); PL.x = nx; PL.z = nz;
       // facing: first person follows the look direction; third person turns toward the movement direction
       const wantHeading = PL.mode === 'fp' ? camYaw + Math.PI : (Math.hypot(PL.vx, PL.vz) > 0.2 ? Math.atan2(PL.vx, PL.vz) : PL.heading);
@@ -101,37 +102,41 @@ function updatePlayer(dt) {
       PL.eye = PL.crouch ? EYE_CROUCH : EYE_STAND;
     } else { PL.eye = PL.seated.sh + 0.72; PL.moveSpeed = 0; PL.vx = PL.vz = 0; }
     PL.eyeCur = damp(PL.eyeCur, PL.eye, 8, dt);
+    PL.groundCur = damp(PL.groundCur ?? 0, PL.seated ? 0 : groundY(PL.x, PL.z), 9, dt);
+    // the front door swings open as you walk up to it
+    if (W.door) { const d = W.door; const near = !PL.seated && Math.hypot(PL.x - (d.x - d.w / 2), PL.z - d.z) < 1.5; if (near && d.open < 0.02) playSfx('click', { x: d.x, y: 1, z: d.z }, 0.5); d.open = damp(d.open, near ? 1 : 0, near ? 3 : 1.6, dt); d.swing.rotation.y = -d.open * 1.65; }
     // the character model
-    av.group.position.set(PL.x, 0, PL.z); av.group.rotation.y = PL.heading;
+    av.group.position.set(PL.x, PL.groundCur, PL.z); av.group.rotation.y = PL.heading;
     const rel = PL.mode === 'tp' ? wrapAngle(PL.tp.yaw + Math.PI - PL.heading) : 0; const headYaw = Math.abs(rel) < 1.5 ? rel * 0.5 : 0;   // glance where the camera looks, unless it's facing her
     av.animate(dt, { speed: PL.moveSpeed, moving: PL.moveSpeed > 0.15, seated: !!PL.seated, seatH: PL.seated ? PL.seated.sh : 0, crouch: PL.crouch && !PL.seated, headYaw, headPitch: PL.mode === 'fp' ? PL.pitch : 0, hideHead: PL.mode === 'fp' });
     av.group.visible = true;
     if (PL.mode === 'fp') {
       const bob = Math.sin(PL.bobT) * 0.014 * clamp(PL.moveSpeed / 2, 0, 1); const sway = Math.sin(PL.bobT * 0.5) * 0.006 * clamp(PL.moveSpeed / 2, 0, 1);
-      const desired = new THREE.Vector3(PL.x - Math.sin(PL.yaw) * 0.06 + Math.cos(PL.yaw) * sway, PL.eyeCur + bob, PL.z - Math.cos(PL.yaw) * 0.06 - Math.sin(PL.yaw) * sway);
+      const desired = new THREE.Vector3(PL.x - Math.sin(PL.yaw) * 0.06 + Math.cos(PL.yaw) * sway, PL.groundCur + PL.eyeCur + bob, PL.z - Math.cos(PL.yaw) * 0.06 - Math.sin(PL.yaw) * sway);
       const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(PL.pitch, PL.yaw, 0, 'YXZ')); applyCam(desired, q, dt);
     } else {
-      const t = PL.tp; const headY = PL.seated ? PL.seated.sh + 0.75 : (PL.crouch ? 1.15 : 1.5);
+      const t = PL.tp; const headY = PL.groundCur + (PL.seated ? PL.seated.sh + 0.75 : (PL.crouch ? 1.15 : 1.5));
       const target = new THREE.Vector3(PL.x, headY + 0.05, PL.z);
       let px = PL.x + Math.sin(t.yaw) * Math.cos(t.pitch) * t.dist, py = headY + 0.05 + Math.sin(t.pitch) * t.dist, pz = PL.z + Math.cos(t.yaw) * Math.cos(t.pitch) * t.dist;
-      px = clamp(px, ROOM.x0 + 0.2, ROOM.x1 - 0.2); pz = clamp(pz, ROOM.z0 + 0.2, ROOM.z1 - 0.2); py = clamp(py, 0.35, ROOM.h - 0.15);
+      if (inRoom(PL.x, PL.z)) { px = clamp(px, ROOM.x0 + 0.2, ROOM.x1 - 0.2); pz = clamp(pz, ROOM.z0 + 0.2, ROOM.z1 - 0.2); py = clamp(py, 0.35, ROOM.h - 0.15); }
+      else py = Math.max(py, groundY(px, pz) + 0.35);
       // don't let furniture sit between the camera and the character: shorten when the camera point is inside an obstacle
-      const [cx2, cz2] = resolveCircle(px, pz, 0.15, { minTop: py - 0.05 }); px = cx2; pz = cz2;
+      const [cx2, cz2] = resolveCircle(px, pz, 0.15, { minTop: py - 0.05, bounds: inRoom(PL.x, PL.z) }); px = cx2; pz = cz2;
       const desired = new THREE.Vector3(px, py, pz); const m = new THREE.Matrix4().lookAt(desired, target, new THREE.Vector3(0, 1, 0)); const q = new THREE.Quaternion().setFromRotationMatrix(m);
       applyCam(desired, q, dt);
     }
-    W.playerPos = new THREE.Vector3(PL.x, PL.eyeCur, PL.z); W.playerSpeed = PL.moveSpeed;
+    W.playerPos = new THREE.Vector3(PL.x, PL.groundCur + PL.eyeCur, PL.z); W.playerSpeed = PL.moveSpeed;
   } else {
     const o = PL.orbit; const k = PL.keys;
     if (PL.follow) { const c = PL.follow; o.tx = damp(o.tx, c.x, 4, dt); o.tz = damp(o.tz, c.z, 4, dt); o.ty = damp(o.ty, c.y + 0.15, 4, dt); }
-    else { let fx = 0, fz = 0; if (k.w || k.arrowup) fz -= 1; if (k.s || k.arrowdown) fz += 1; if (k.a || k.arrowleft) fx -= 1; if (k.d || k.arrowright) fx += 1; const sp = 3 * dt; const cy = Math.cos(o.yaw), sy = Math.sin(o.yaw); o.tx += (fx * cy + fz * sy) * sp; o.tz += (-fx * sy + fz * cy) * sp; o.tx = clamp(o.tx, ROOM.x0, ROOM.x1); o.tz = clamp(o.tz, ROOM.z0, ROOM.z1); if (k.q) o.ty = clamp(o.ty + dt * 1.5, 0.1, 3); if (k.e) o.ty = clamp(o.ty - dt * 1.5, 0.1, 3); }
+    else { let fx = 0, fz = 0; if (k.w || k.arrowup) fz -= 1; if (k.s || k.arrowdown) fz += 1; if (k.a || k.arrowleft) fx -= 1; if (k.d || k.arrowright) fx += 1; const sp = 3 * dt; const cy = Math.cos(o.yaw), sy = Math.sin(o.yaw); o.tx += (fx * cy + fz * sy) * sp; o.tz += (-fx * sy + fz * cy) * sp; o.tx = clamp(o.tx, -40, 40); o.tz = clamp(o.tz, -14, 44); if (k.q) o.ty = clamp(o.ty + dt * 1.5, -1.2, 14); if (k.e) o.ty = clamp(o.ty - dt * 1.5, -1.2, 14); }
     const d = PL.follow ? Math.min(o.dist, 3.2) : o.dist;
     let px = o.tx + Math.sin(o.yaw) * Math.cos(o.pitch) * d, py = o.ty + Math.sin(o.pitch) * d, pz = o.tz + Math.cos(o.yaw) * Math.cos(o.pitch) * d;
-    if (py < ROOM.h + 0.15) { px = clamp(px, ROOM.x0 + 0.25, ROOM.x1 - 0.25); pz = clamp(pz, ROOM.z0 + 0.25, ROOM.z1 - 0.25); py = clamp(py, 0.25, ROOM.h - 0.1); }
-    else { px = clamp(px, -14, 14); pz = clamp(pz, -12, 14); }
+    if (inRoom(o.tx, o.tz) && py < ROOM.h + 0.15) { px = clamp(px, ROOM.x0 + 0.25, ROOM.x1 - 0.25); pz = clamp(pz, ROOM.z0 + 0.25, ROOM.z1 - 0.25); py = clamp(py, 0.25, ROOM.h - 0.1); }
+    else { px = clamp(px, -70, 70); pz = clamp(pz, -30, 70); py = Math.max(py, groundY(px, pz) + 0.3); if (inRoom(px, pz) && py < ROOM.h + 0.15) py = ROOM.h + 0.3; }
     const desired = new THREE.Vector3(px, py, pz); const m = new THREE.Matrix4().lookAt(desired, new THREE.Vector3(o.tx, o.ty, o.tz), new THREE.Vector3(0, 1, 0)); const q = new THREE.Quaternion().setFromRotationMatrix(m);
     applyCam(desired, q, dt);
-    av.group.position.set(PL.x, 0, PL.z); av.group.rotation.y = PL.heading; av.animate(dt, { speed: 0, moving: false, seated: !!PL.seated, seatH: PL.seated ? PL.seated.sh : 0, crouch: false, headYaw: 0, headPitch: 0, hideHead: false }); av.group.visible = true;
+    av.group.position.set(PL.x, PL.groundCur || 0, PL.z); av.group.rotation.y = PL.heading; av.animate(dt, { speed: 0, moving: false, seated: !!PL.seated, seatH: PL.seated ? PL.seated.sh : 0, crouch: false, headYaw: 0, headPitch: 0, hideHead: false }); av.group.visible = true;
     W.playerPos = new THREE.Vector3(PL.x, 1.5, PL.z); W.playerSpeed = 0;
   }
   updateHover();

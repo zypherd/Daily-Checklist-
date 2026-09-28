@@ -1,0 +1,853 @@
+{
+ "version": 1,
+ "generated": "2026-09-28",
+ "sky": {
+  "margin": 64,
+  "width": 2048,
+  "height": 1024,
+  "frames": [
+   {
+    "id": "night",
+    "src": "qwantani_night_puresky",
+    "file": "sky/night.jpg",
+    "hour": 3.5,
+    "kind": "night",
+    "scale": 34.13596801757813,
+    "bodyAz": 74.794921875,
+    "bodyEl": null,
+    "zenith": [
+     0.4737887978553772,
+     0.43649861216545105,
+     0.4463084638118744
+    ],
+    "horizon": [
+     1.5234310626983643,
+     1.739453911781311,
+     1.7155989408493042
+    ],
+    "mean": [
+     0.7172945141792297,
+     0.728520929813385,
+     0.7257269024848938
+    ],
+    "p50": 0.47764724493026733
+   },
+   {
+    "id": "dawn",
+    "src": "qwantani_dawn_puresky",
+    "file": "sky/dawn.jpg",
+    "hour": 5.4,
+    "kind": "dawn",
+    "scale": 13.194064331054689,
+    "bodyAz": 36.24902256392255,
+    "bodyEl": null,
+    "zenith": [
+     0.3530982434749603,
+     0.4736675024032593,
+     0.7394785284996033
+    ],
+    "horizon": [
+     1.3661408424377441,
+     1.1674262285232544,
+     1.165878176689148
+    ],
+    "mean": [
+     1.0506943464279175,
+     1.1356167793273926,
+     1.3901432752609253
+    ],
+    "p50": 0.8192992210388184
+   },
+   {
+    "id": "sunrise",
+    "src": "qwantani_sunrise_puresky",
+    "file": "sky/sunrise.jpg",
+    "hour": 6.2,
+    "kind": "sun",
+    "scale": 21.198587036132814,
+    "bodyAz": 36.03515625,
+    "bodyEl": 2.109375,
+    "zenith": [
+     0.3749518394470215,
+     0.5729539394378662,
+     0.9414777755737305
+    ],
+    "horizon": [
+     1.6522018909454346,
+     1.20859956741333,
+     1.0088518857955933
+    ],
+    "mean": [
+     0.9847712516784668,
+     1.153834581375122,
+     1.4590412378311157
+    ],
+    "p50": 0.8267921805381775
+   },
+   {
+    "id": "morning",
+    "src": "qwantani_morning_puresky",
+    "file": "sky/morning.jpg",
+    "hour": 7.8,
+    "kind": "sun",
+    "scale": 20.099641418457033,
+    "bodyAz": 36.093749999999986,
+    "bodyEl": 20.156250000000004,
+    "zenith": [
+     0.10241036117076874,
+     0.15487203001976013,
+     0.2570033669471741
+    ],
+    "horizon": [
+     0.9347156882286072,
+     0.9359092712402344,
+     0.86983722448349
+    ],
+    "mean": [
+     0.31585901975631714,
+     0.40458589792251587,
+     0.5346613526344299
+    ],
+    "p50": 0.22188983857631683
+   },
+   {
+    "id": "mid_morning",
+    "src": "qwantani_mid_morning_puresky",
+    "file": "sky/mid_morning.jpg",
+    "hour": 9.8,
+    "kind": "sun",
+    "scale": 13.371609497070313,
+    "bodyAz": 36.03515625,
+    "bodyEl": 40.166015625,
+    "zenith": [
+     0.10613498836755753,
+     0.16016384959220886,
+     0.261882483959198
+    ],
+    "horizon": [
+     0.45816266536712646,
+     0.48557522892951965,
+     0.5099696516990662
+    ],
+    "mean": [
+     0.1950012445449829,
+     0.26567745208740234,
+     0.3823879659175873
+    ],
+    "p50": 0.17792382836341858
+   },
+   {
+    "id": "noon",
+    "src": "qwantani_noon_puresky",
+    "file": "sky/noon.jpg",
+    "hour": 12.5,
+    "kind": "sun",
+    "scale": 13.648240661621095,
+    "bodyAz": 36.181640624999986,
+    "bodyEl": 49.81445312500001,
+    "zenith": [
+     0.07028001546859741,
+     0.11264097690582275,
+     0.20153848826885223
+    ],
+    "horizon": [
+     0.31797438859939575,
+     0.35578539967536926,
+     0.3926917314529419
+    ],
+    "mean": [
+     0.11531127244234085,
+     0.1674717664718628,
+     0.2645081877708435
+    ],
+    "p50": 0.12396640330553055
+   },
+   {
+    "id": "afternoon",
+    "src": "qwantani_afternoon_puresky",
+    "file": "sky/afternoon.jpg",
+    "hour": 15.0,
+    "kind": "sun",
+    "scale": 13.099322509765626,
+    "bodyAz": 36.123046875,
+    "bodyEl": 40.818917410714285,
+    "zenith": [
+     0.06265538185834885,
+     0.10111032426357269,
+     0.1815565824508667
+    ],
+    "horizon": [
+     0.41698214411735535,
+     0.4575061798095703,
+     0.49285584688186646
+    ],
+    "mean": [
+     0.13228954374790192,
+     0.18943339586257935,
+     0.2928099036216736
+    ],
+    "p50": 0.12320136278867722
+   },
+   {
+    "id": "late_afternoon",
+    "src": "qwantani_late_afternoon_puresky",
+    "file": "sky/late_afternoon.jpg",
+    "hour": 17.2,
+    "kind": "sun",
+    "scale": 28.250927734375,
+    "bodyAz": 36.123046875,
+    "bodyEl": 19.072265625,
+    "zenith": [
+     0.13726021349430084,
+     0.2013530433177948,
+     0.3164339065551758
+    ],
+    "horizon": [
+     0.8519508838653564,
+     0.8184449672698975,
+     0.7390485405921936
+    ],
+    "mean": [
+     0.36442530155181885,
+     0.4542822241783142,
+     0.5818709135055542
+    ],
+    "p50": 0.27385076880455017
+   },
+   {
+    "id": "sunset",
+    "src": "qwantani_sunset_puresky",
+    "file": "sky/sunset.jpg",
+    "hour": 19.1,
+    "kind": "sun",
+    "scale": 35.83157653808594,
+    "bodyAz": 36.03515625,
+    "bodyEl": 6.064453125,
+    "zenith": [
+     0.21903251111507416,
+     0.35436221957206726,
+     0.6097607612609863
+    ],
+    "horizon": [
+     2.0320913791656494,
+     1.7126662731170654,
+     1.1868854761123657
+    ],
+    "mean": [
+     0.6903052926063538,
+     0.8446935415267944,
+     1.0922574996948242
+    ],
+    "p50": 0.5293452739715576
+   },
+   {
+    "id": "dusk_1",
+    "src": "qwantani_dusk_1_puresky",
+    "file": "sky/dusk_1.jpg",
+    "hour": 19.8,
+    "kind": "dusk",
+    "scale": 6.346859741210938,
+    "bodyAz": 36.70858928881854,
+    "bodyEl": null,
+    "zenith": [
+     0.4878414273262024,
+     0.7005176544189453,
+     1.1245408058166504
+    ],
+    "horizon": [
+     0.6260786652565002,
+     0.6986129879951477,
+     0.8539822101593018
+    ],
+    "mean": [
+     0.9153465032577515,
+     1.1160082817077637,
+     1.531973123550415
+    ],
+    "p50": 0.9756812453269958
+   },
+   {
+    "id": "dusk_2",
+    "src": "qwantani_dusk_2_puresky",
+    "file": "sky/dusk_2.jpg",
+    "hour": 20.4,
+    "kind": "dusk",
+    "scale": 8.65561981201172,
+    "bodyAz": 35.85944847836795,
+    "bodyEl": null,
+    "zenith": [
+     0.556945264339447,
+     0.6484437584877014,
+     1.1472522020339966
+    ],
+    "horizon": [
+     0.9978323578834534,
+     0.682040274143219,
+     0.8377912640571594
+    ],
+    "mean": [
+     1.1359187364578247,
+     1.0297080278396606,
+     1.492019534111023
+    ],
+    "p50": 0.7962390184402466
+   },
+   {
+    "id": "moonrise",
+    "src": "qwantani_moonrise_puresky",
+    "file": "sky/moonrise.jpg",
+    "hour": 21.0,
+    "kind": "moon",
+    "scale": 35.66044921875,
+    "bodyAz": 36.03515625,
+    "bodyEl": 13.798828125,
+    "zenith": [
+     0.09863770753145218,
+     0.16917471587657928,
+     0.3005136251449585
+    ],
+    "horizon": [
+     1.2917125225067139,
+     1.3783268928527832,
+     1.346882700920105
+    ],
+    "mean": [
+     0.30969923734664917,
+     0.47229617834091187,
+     0.6886523365974426
+    ],
+    "p50": 0.24378827214241028
+   },
+   {
+    "id": "moon_noon",
+    "src": "qwantani_moon_noon_puresky",
+    "file": "sky/moon_noon.jpg",
+    "hour": 0.5,
+    "kind": "moon",
+    "scale": 10.412200927734375,
+    "bodyAz": 36.123046875,
+    "bodyEl": 60.70312500000001,
+    "zenith": [
+     0.11655206978321075,
+     0.2006431370973587,
+     0.33213192224502563
+    ],
+    "horizon": [
+     0.38612252473831177,
+     0.40001851320266724,
+     0.4303685128688812
+    ],
+    "mean": [
+     0.15517278015613556,
+     0.23827503621578217,
+     0.3630381226539612
+    ],
+    "p50": 0.194297656416893
+   }
+  ]
+ },
+ "textures": {
+  "oak_wood_planks": {
+   "size": 1.2,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Oak Wood Planks"
+  },
+  "wood_table_001": {
+   "size": 1.5,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Wood Table 001"
+  },
+  "oak_veneer_01": {
+   "size": 1.83,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Oak Veneer 01"
+  },
+  "dark_wooden_planks": {
+   "size": 2.0,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Dark Wooden Planks"
+  },
+  "white_plaster_02": {
+   "size": 1.0,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "White Plaster 02"
+  },
+  "plastered_wall_04": {
+   "size": 3.2,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Plastered Wall 04"
+  },
+  "plastered_wall_03": {
+   "size": 4.0,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Plastered Wall 03"
+  },
+  "long_white_tiles": {
+   "size": 1.27,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Long White Tiles"
+  },
+  "velour_velvet": {
+   "size": 0.284,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Velour Velvet"
+  },
+  "rough_linen": {
+   "size": 0.271,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Rough Linen"
+  },
+  "cotton_jersey": {
+   "size": 0.264,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Cotton Jersey"
+  },
+  "curly_teddy_natural": {
+   "size": 0.336,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Curly Teddy Natural"
+  },
+  "brown_leather": {
+   "size": 0.4,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Brown Leather"
+  },
+  "hessian_230": {
+   "size": 0.269,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Hessian 230"
+  },
+  "terry_cloth": {
+   "size": 0.367,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Terry Cloth"
+  },
+  "wool_boucle": {
+   "size": 0.315,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Wool Boucle"
+  },
+  "aerial_beach_01": {
+   "size": 30.0,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Aerial Beach 01"
+  },
+  "damp_beach_sand": {
+   "size": 2.0,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Damp Beach Sand"
+  },
+  "wood_floor_deck": {
+   "size": 1.8,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Wood Floor Deck"
+  },
+  "concrete_pavers_02": {
+   "size": 2.0,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Concrete Pavers 02"
+  },
+  "patio_tiles": {
+   "size": 2.15,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Patio Tiles"
+  },
+  "coral_stone_wall": {
+   "size": 2.0,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Coral Stone Wall"
+  },
+  "beige_wall_001": {
+   "size": 3.0,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Beige Wall 001"
+  },
+  "reed_roof_04": {
+   "size": 2.5,
+   "res": 1024,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Reed Roof 04"
+  },
+  "palm_tree_bark": {
+   "size": 1.3,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Palm Tree Bark"
+  },
+  "blue_floor_tiles_01": {
+   "size": 2.0,
+   "res": 512,
+   "maps": [
+    "diff",
+    "nor",
+    "arm"
+   ],
+   "name": "Blue Floor Tiles 01"
+  }
+ },
+ "models": {
+  "dining_chair_02": {
+   "file": "models/dining_chair_02.glb",
+   "dims": [
+    0.434,
+    0.576,
+    0.973
+   ],
+   "name": "Dining Chair 02",
+   "mb": 0.19
+  },
+  "round_wooden_table_01": {
+   "file": "models/round_wooden_table_01.glb",
+   "dims": [
+    1.399,
+    1.399,
+    1.005
+   ],
+   "name": "Round Wooden Table 01",
+   "mb": 0.14
+  },
+  "wooden_table_02": {
+   "file": "models/wooden_table_02.glb",
+   "dims": [
+    1.134,
+    0.706,
+    0.8
+   ],
+   "name": "Wooden Table 02",
+   "mb": 0.21
+  },
+  "bar_chair_round_01": {
+   "file": "models/bar_chair_round_01.glb",
+   "dims": [
+    0.483,
+    0.486,
+    0.751
+   ],
+   "name": "Bar Chair Round 01",
+   "mb": 0.37
+  },
+  "Sofa_01": {
+   "file": "models/Sofa_01.glb",
+   "dims": [
+    1.571,
+    0.658,
+    0.797
+   ],
+   "name": "Sofa 01",
+   "mb": 0.19
+  },
+  "ArmChair_01": {
+   "file": "models/ArmChair_01.glb",
+   "dims": [
+    0.848,
+    0.766,
+    1.065
+   ],
+   "name": "Arm Chair 01",
+   "mb": 0.4
+  },
+  "coffee_table_round_01": {
+   "file": "models/coffee_table_round_01.glb",
+   "dims": [
+    1.301,
+    1.301,
+    0.491
+   ],
+   "name": "Coffee Table Round 01",
+   "mb": 0.17
+  },
+  "potted_plant_01": {
+   "file": "models/potted_plant_01.glb",
+   "dims": [
+    0.589,
+    0.637,
+    1.351
+   ],
+   "name": "Potted Plant 01",
+   "mb": 0.9
+  },
+  "potted_plant_02": {
+   "file": "models/potted_plant_02.glb",
+   "dims": [
+    0.701,
+    0.657,
+    0.841
+   ],
+   "name": "Potted Plant 02",
+   "mb": 0.66
+  },
+  "potted_plant_04": {
+   "file": "models/potted_plant_04.glb",
+   "dims": [
+    0.17,
+    0.186,
+    0.268
+   ],
+   "name": "Potted Plant 04",
+   "mb": 0.37
+  },
+  "ceiling_fan": {
+   "file": "models/ceiling_fan.glb",
+   "dims": [
+    1.463,
+    1.463,
+    0.516
+   ],
+   "name": "Ceiling Fan",
+   "mb": 0.18
+  },
+  "modern_ceiling_lamp_01": {
+   "file": "models/modern_ceiling_lamp_01.glb",
+   "dims": [
+    0.432,
+    0.432,
+    0.952
+   ],
+   "name": "Modern Ceiling Lamp 01",
+   "mb": 0.14
+  },
+  "fancy_picture_frame_01": {
+   "file": "models/fancy_picture_frame_01.glb",
+   "dims": [
+    0.603,
+    0.02,
+    0.464
+   ],
+   "name": "Fancy Picture Frame 01",
+   "mb": 0.33
+  },
+  "tea_set_01": {
+   "file": "models/tea_set_01.glb",
+   "dims": [
+    0.918,
+    0.484,
+    0.165
+   ],
+   "name": "Tea Set 01",
+   "mb": 0.2
+  },
+  "CashRegister_01": {
+   "file": "models/CashRegister_01.glb",
+   "dims": [
+    0.6,
+    0.624,
+    0.621
+   ],
+   "name": "Cash Register 01",
+   "mb": 0.31
+  },
+  "outdoor_table_chair_set_01": {
+   "file": "models/outdoor_table_chair_set_01.glb",
+   "dims": [
+    0.776,
+    1.831,
+    0.859
+   ],
+   "name": "Outdoor Table Chair Set 01",
+   "mb": 0.34
+  },
+  "lifebuoy": {
+   "file": "models/lifebuoy.glb",
+   "dims": [
+    0.783,
+    0.155,
+    0.841
+   ],
+   "name": "Lifebuoy",
+   "mb": 0.47
+  },
+  "street_lamp_02": {
+   "file": "models/street_lamp_02.glb",
+   "dims": [
+    0.386,
+    0.807,
+    1.675
+   ],
+   "name": "Street Lamp 02",
+   "mb": 0.2
+  },
+  "stone_fire_pit": {
+   "file": "models/stone_fire_pit.glb",
+   "dims": [
+    1.448,
+    1.433,
+    0.388
+   ],
+   "name": "Stone Fire Pit",
+   "mb": 0.47
+  },
+  "Lantern_01": {
+   "file": "models/Lantern_01.glb",
+   "dims": [
+    0.122,
+    0.097,
+    0.294
+   ],
+   "name": "Lantern 01",
+   "mb": 0.36
+  },
+  "modular_wooden_pier": {
+   "file": "models/modular_wooden_pier.glb",
+   "dims": [
+    3.102,
+    19.026,
+    7.516
+   ],
+   "name": "Modular Wooden Pier",
+   "mb": 1.14
+  },
+  "wicker_basket_01": {
+   "file": "models/wicker_basket_01.glb",
+   "dims": [
+    0.383,
+    0.295,
+    0.117
+   ],
+   "name": "Wicker Basket 01",
+   "mb": 0.38
+  },
+  "concrete_cat_statue": {
+   "file": "models/concrete_cat_statue.glb",
+   "dims": [
+    0.153,
+    0.25,
+    0.283
+   ],
+   "name": "Concrete Cat Statue",
+   "mb": 0.68
+  },
+  "vintage_electric_kettle": {
+   "file": "models/vintage_electric_kettle.glb",
+   "dims": [
+    0.321,
+    0.249,
+    0.305
+   ],
+   "name": "Vintage Electric Kettle",
+   "mb": 0.37
+  }
+ }
+}

@@ -48,6 +48,8 @@ function buildWorld() {
   // door area
   coatRack(-4.4, 4.05); explore(-4.0, 3.6, 'the coat rack', -4.4, 4.05); explore(-2.9, 3.6, 'the doormat', -2.9, 4.4);
   aFrameSign(-2.0, z1 + 1.0, 0.2);
+  placeModel('concrete_cat_statue', -1.9, 0.03, z1 + 0.55, -0.6, { fit: { h: 0.34 } });   // a stone cat guards the door
+  placeModel('wicker_basket_01', -4.9, 0.0, 4.1, 0.4, { fit: { h: 0.32 }, shadow: false });
   // cat furniture
   catTree(-5.2, 3.75); catBed(1.5, -3.55, { warmth: 0.7 }); explore(-1.5, -2.6, 'the service bell', -1.5, -3.3); explore(-0.4, -2.6, 'the pastry case', -0.4, -3.4);
   // wall art & clock
@@ -56,7 +58,12 @@ function buildWorld() {
   wallArt(back, 10.9, 1.55, 2, 0.6, 0.45); wallArt(left, 7.6, 1.8, 1, 0.7, 0.52); wallArt(left, 6.1, 1.65, 0, 0.6, 0.44);
   wallClock(back, 7.4, 2.35);
   // ceiling fans (slow, always turning) and brass wall sconces
-  W.fans = []; [[-0.6, -1.3], [3.4, 1.6]].forEach(([fx, fz]) => { const g = new THREE.Group(); g.position.set(fx, ROOM.h - 0.02, fz); const rod = new THREE.Mesh(G.cyl(0.02, 0.02, 0.35, 8), M.black); rod.position.y = -0.17; g.add(rod); const motor = new THREE.Mesh(G.cyl(0.12, 0.1, 0.14, 16), M.black); motor.position.y = -0.4; g.add(motor); const hub = new THREE.Group(); hub.position.y = -0.46; g.add(hub); for (let i = 0; i < 4; i++) { const bl = new THREE.Mesh(G.box(0.62, 0.012, 0.13), M.walnut); bl.position.set(0.42, 0, 0); bl.rotation.z = -0.14; const arm = new THREE.Group(); arm.rotation.y = i * Math.PI / 2; arm.add(bl); hub.add(arm); bl.castShadow = true; } W.scene.add(g); W.fans.push(hub); });
+  W.fans = []; W.fanModels = [];
+  [[-0.6, -1.3], [3.4, 1.6]].forEach(([fx, fz]) => {
+    const procedural = () => { const g = new THREE.Group(); g.position.set(fx, ROOM.h - 0.02, fz); const rod = new THREE.Mesh(G.cyl(0.02, 0.02, 0.35, 8), M.black); rod.position.y = -0.17; g.add(rod); const motor = new THREE.Mesh(G.cyl(0.12, 0.1, 0.14, 16), M.black); motor.position.y = -0.4; g.add(motor); const hub = new THREE.Group(); hub.position.y = -0.46; g.add(hub); for (let i = 0; i < 4; i++) { const bl = new THREE.Mesh(G.box(0.62, 0.012, 0.13), M.walnut); bl.position.set(0.42, 0, 0); bl.rotation.z = -0.14; const arm = new THREE.Group(); arm.rotation.y = i * Math.PI / 2; arm.add(bl); hub.add(arm); bl.castShadow = true; } W.scene.add(g); W.fans.push(hub); };
+    const p = placeModel('ceiling_fan', fx, ROOM.h - 0.02, fz, rand(TAU), { align: 'ceiling', fit: { w: 1.3 }, fallback: procedural });   // the scan spins as a whole (round motor housing)
+    if (p) W.fanModels.push({ p, angle: p.ry }); else procedural();
+  });
   const sconce = (frameM, lx, ly) => { const f = frameM.clone().multiply(mat(lx, ly, 0.02)); B.add(G.box(0.08, 0.16, 0.03), 'brass', f.clone().multiply(mat(0, 0, 0.015))); B.add(G.cyl(0.012, 0.012, 0.16, 8), 'brass', f.clone().multiply(mat(0, 0.1, 0.1, 0, { rx: -Math.PI / 2 }))); const sh = new THREE.Mesh(G.cyl(0.05, 0.09, 0.13, 20, true), M.shade); sh.applyMatrix4(f.clone().multiply(mat(0, 0.16, 0.16))); W.scene.add(sh); const b = new THREE.Mesh(G.sph(0.028, 10, 8), M.bulb); b.applyMatrix4(f.clone().multiply(mat(0, 0.13, 0.16))); W.scene.add(b); };
   sconce(right, 6.1, 1.75); sconce(right, 1.2, 1.75); sconce(back, 10.2, 1.9); sconce(left, 5.2, 1.85);
   // light switch by the door
@@ -173,6 +180,9 @@ function updateAmbient(dt) {
   // dangling toy pendulum
   if (W.danglers) for (const d of W.danglers) { d.vel += (-9.8 / d.len * Math.sin(d.ang) - d.vel * 0.35) * dt; d.ang += d.vel * dt; d.ball.position.set(d.x + Math.sin(d.ang) * d.len, d.y - Math.cos(d.ang) * d.len, d.z); d.string.position.set(d.x + Math.sin(d.ang) * d.len / 2, d.y - Math.cos(d.ang) * d.len / 2, d.z); d.string.rotation.z = -d.ang; }
   if (W.fans) W.fans.forEach((h, i) => { h.rotation.y += dt * (W.lightsOn ? 2.6 : 0.9) * (i ? 1 : -1); });
+  if (W.fanModels) W.fanModels.forEach((f, i) => { f.angle += dt * (W.lightsOn ? 2.6 : 0.9) * (i ? 1 : -1); if (f.p.meshes) updateModelPlacement(f.p, { ry: f.angle }); });
+  if (EXT.lamps) { const want = W.isNight ? 1 : 0; EXT.lamps.forEach(l => { l.intensity = damp(l.intensity, want * 3.5, 2, dt); }); }
+  if (EXT.fire) { const f = EXT.fire; const on = W.isNight; f.light.intensity = damp(f.light.intensity, on ? 6 + Math.sin(W.time * 11) * 1.2 + Math.sin(W.time * 23.7) * 0.6 : 0, 6, dt); f.flames.forEach((fl, i) => { fl.visible = on; fl.scale.set(0.55 + Math.sin(W.time * 9 + i * 2.1) * 0.12, 0.9 + Math.sin(W.time * 13 + i) * 0.25, 1); fl.material.opacity = 0.75 + Math.sin(W.time * 17 + i) * 0.15; }); }
   // clock
   if (W.wallClock) { const h = W.dayTime % 12, m = (W.dayTime % 1) * 60; W.wallClock.h.rotation.z = -(h / 12) * TAU; W.wallClock.m.rotation.z = -(m / 60) * TAU; }
   // espresso machine

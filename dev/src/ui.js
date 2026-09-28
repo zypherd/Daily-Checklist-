@@ -63,7 +63,7 @@ function cycleCat() { const i = W.selectedCat ? W.cats.indexOf(W.selectedCat) : 
 let cardTick = 0, clockTick = 0, boardDirty = false, boardT = 0, fpsAcc = 0, fpsN = 0;
 function updateUI(dt) {
   cardTick += dt; if (cardTick > 0.5) { cardTick = 0; updateCard(); }
-  clockTick += dt; if (clockTick > 1) { clockTick = 0; const h = Math.floor(W.dayTime), m = Math.floor((W.dayTime % 1) * 60); const phase = W.dayTime < 6 ? 'night' : W.dayTime < 10 ? 'morning' : W.dayTime < 14 ? 'midday' : W.dayTime < 17.5 ? 'afternoon' : W.dayTime < 20 ? 'evening' : 'night'; document.getElementById('hud-clock').textContent = `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'} · ${phase}`; const f = document.getElementById('hud-fps'); if (f && fpsN) { f.textContent = Math.round(fpsN / fpsAcc) + ' fps'; fpsAcc = 0; fpsN = 0; } }
+  clockTick += dt; if (clockTick > 1) { clockTick = 0; const h = Math.floor(W.dayTime), m = Math.floor((W.dayTime % 1) * 60); const phase = W.dayTime < 6 ? 'night' : W.dayTime < 10 ? 'morning' : W.dayTime < 14 ? 'midday' : W.dayTime < 17.5 ? 'afternoon' : W.dayTime < 20 ? 'evening' : 'night'; document.getElementById('hud-clock').textContent = `${((h + 11) % 12) + 1}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'} · ${phase}`; const f = document.getElementById('hud-fps'); if (f && fpsN) { f.textContent = Math.round(fpsN / fpsAcc) + ' fps'; fpsAcc = 0; fpsN = 0; } const as = document.getElementById('hud-assets'); if (as) { const txt = assetProgressText(); as.textContent = txt; as.style.display = txt ? '' : 'none'; } }
   fpsAcc += dt; fpsN++;
   if (boardDirty) { boardT += dt; if (boardT > 0.25) { boardDirty = false; boardT = 0; refreshTaskBoard(); } }
 }

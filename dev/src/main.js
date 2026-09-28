@@ -8,6 +8,7 @@ async function bootCafe() {
     const [three, bgu, renv, rbg] = await Promise.race([Promise.all([import('three'), import('three/addons/utils/BufferGeometryUtils.js'), import('three/addons/environments/RoomEnvironment.js'), import('three/addons/geometries/RoundedBoxGeometry.js')]), timeout(25000)]);
     THREE = three; window.THREE = three; mergeGeometries = bgu.mergeGeometries; RoomEnvironment = renv.RoomEnvironment; RoundedBoxGeometry = rbg.RoundedBoxGeometry;
     loadStatus('Loading the render pipeline…', 12); await loadPostModules();
+    loadStatus('Looking for the real-world asset pack…', 16); await loadAssetManifest();
     const container = document.getElementById('cafe3d');
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     W.renderer = renderer; renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5)); renderer.setSize(window.innerWidth, window.innerHeight);
@@ -33,6 +34,8 @@ async function bootCafe() {
     loadStatus('Welcome in.', 100);
     setTimeout(() => { const ld = document.getElementById('cafe-loading'); if (ld) { ld.classList.add('done'); setTimeout(() => ld.remove(), 900); } }, 350);
     console.log('The Rose Teacup ready in', Math.round(performance.now() - t0), 'ms');
+    // the captured skies, scanned textures and furniture stream in behind the live world (see assets.js)
+    startAssetStreaming().catch(e => console.warn('café: asset streaming failed', e));
   } catch (err) {
     console.error(err);
     try { if (W.renderer) { W.renderer.setAnimationLoop(null); W.renderer.dispose(); W.renderer.domElement.remove(); } } catch (e) {}

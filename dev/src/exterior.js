@@ -1,6 +1,12 @@
 // ─── Outside: a beach resort — deck, pool, white sand, thatched huts, palms, ocean & the towers ──
 const EXT = { deckZ0: ROOM.z1, deckZ1: 9.5, poolZ0: 10.4, poolZ1: 16.6, poolX0: -4.5, poolX1: 7.0, sandZ0: 19.5, sandY: -1.2, shoreZ: 31, palms: [], torches: [], huts: [] };
 
+// height of the ground under a walker: the terrace and pool paving sit at 0, the beach a step below, joined by the stairs at x ≈ 1.2
+function groundY(x, z) {
+  if (z > 19.6 && x > -0.45 && x < 2.85) { const i = Math.floor((z - 19.6) / 0.45); return i > 4 ? EXT.sandY : -0.24 * Math.min(i, 4); }
+  if (z > 20.1 || x < -13.5) return EXT.sandY;
+  return 0;
+}
 function frondTexture() {
   const [c, ctx] = canvas2d(256, 512); ctx.clearRect(0, 0, 256, 512); ctx.translate(0, 512); ctx.scale(1, -1);
   for (let i = 0; i < 84; i++) { const y = 10 + i * 5.9; const len = 124 * Math.sin(Math.min(1, (i + 5) / 34) * Math.PI * 0.5) * (1 - i / 92); const g = ctx.createLinearGradient(128, y, 128 + len, y); g.addColorStop(0, '#4a8a2c'); g.addColorStop(0.6, '#5ea63a'); g.addColorStop(1, '#b7d76a'); ctx.strokeStyle = g; ctx.lineWidth = 7.5; ctx.lineCap = 'round'; [-1, 1].forEach(s => { ctx.beginPath(); ctx.moveTo(128, y); ctx.lineTo(128 + s * len, y + 26 + i * 0.35); ctx.stroke(); }); }
@@ -37,14 +43,14 @@ void main(){
   #include <fog_vertex>
 }`;
 const WATER_FRAG = `#include <fog_pars_fragment>
-uniform float time, scale, shoreZ, isPool, amp; uniform vec3 sunDir, camPos, shallow, deep, sunColor, skyColor; varying vec3 vW; varying float vH;
+uniform float time, scale, shoreZ, isPool, amp, ambient; uniform vec3 sunDir, camPos, shallow, deep, sunColor, skyColor; varying vec3 vW; varying float vH;
 float wave(vec2 p, float t){ return sin(p.x*0.7+p.y*0.45+t*1.2)*0.5 + sin(p.x*1.6-p.y*1.1+t*1.9)*0.28 + sin(p.y*3.1+p.x*0.8+t*2.7)*0.14 + sin(p.x*5.3+p.y*4.1+t*3.4)*0.07; }
 float swell(vec2 p, float t){ return sin(p.y*0.25 - t*0.9 + sin(p.x*0.07)*1.5) * 0.7 + sin(p.y*0.11 - t*0.5 + p.x*0.03) * 0.3; }
 void main(){ vec2 p = vW.xz * scale; float e = 0.08; float h0 = wave(p, time), hx = wave(p + vec2(e, 0.0), time), hz = wave(p + vec2(0.0, e), time);
   float se = 0.5; float s0 = swell(vW.xz, time), sx = swell(vW.xz + vec2(se, 0.0), time), sz = swell(vW.xz + vec2(0.0, se), time); float df = (1.0 - isPool) * smoothstep(0.0, 6.0, vW.z - shoreZ) * amp;
   vec3 n = normalize(vec3(-(hx - h0) / e * 0.05 - (sx - s0) / se * df * 1.2, 1.0, -(hz - h0) / e * 0.05 - (sz - s0) / se * df * 1.2));
   vec3 V = normalize(camPos - vW); float ndv = max(dot(n, V), 0.0); float fres = pow(1.0 - ndv, 3.0);
-  float d = length(vW.xz - camPos.xz); vec3 base = mix(shallow, deep, smoothstep(3.0, 70.0, d) * (1.0 - isPool * 0.7));
+  float d = length(vW.xz - camPos.xz); vec3 base = mix(shallow, deep, smoothstep(3.0, 70.0, d) * (1.0 - isPool * 0.7)) * ambient;
   vec3 R = reflect(-normalize(sunDir), n); float rv = max(dot(R, V), 0.0); float spec = pow(rv, 300.0) * 3.5 + pow(rv, 20.0) * 0.22;
   vec3 col = mix(base, skyColor, 0.12 + fres * 0.55) + sunColor * spec * clamp(sunDir.y * 4.0, 0.0, 1.0);
   float foam = (1.0 - isPool) * smoothstep(3.0, 0.0, abs(vW.z - shoreZ - 0.9 * sin(time * 0.6 + vW.x * 0.25))) * (0.35 + 0.65 * step(0.6, fract(h0 * 0.8 + vW.x * 0.11 + time * 0.04)));
@@ -55,7 +61,7 @@ void main(){ vec2 p = vW.xz * scale; float e = 0.08; float h0 = wave(p, time), h
 }`;
 function waterMaterial(pool) {
   return new THREE.ShaderMaterial({ vertexShader: WATER_VERT, fragmentShader: WATER_FRAG, fog: true, transparent: !!pool, depthWrite: !pool, uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
-    time: { value: 0 }, scale: { value: pool ? 2.2 : 0.35 }, amp: { value: pool ? 0.0 : 0.16 }, shoreZ: { value: EXT.shoreZ }, isPool: { value: pool ? 1 : 0 }, sunDir: { value: new THREE.Vector3(0, 1, 0) }, camPos: { value: new THREE.Vector3() },
+    time: { value: 0 }, ambient: { value: 1 }, scale: { value: pool ? 2.2 : 0.35 }, amp: { value: pool ? 0.0 : 0.16 }, shoreZ: { value: EXT.shoreZ }, isPool: { value: pool ? 1 : 0 }, sunDir: { value: new THREE.Vector3(0, 1, 0) }, camPos: { value: new THREE.Vector3() },
     shallow: { value: new THREE.Color(pool ? 0x4fd0e0 : 0x5fd6d0) }, deep: { value: new THREE.Color(pool ? 0x1f9ec0 : 0x1a6fa6) }, sunColor: { value: new THREE.Color(0xfff2d0) }, skyColor: { value: new THREE.Color(0xbfd8ee) } }]) });
 }
 
@@ -63,6 +69,7 @@ const BX = new Batcher();   // static exterior geometry, merged per material
 const m4c = (pos, quat, sc = 1) => new THREE.Matrix4().compose(pos, quat, new THREE.Vector3(sc, sc, sc));
 function palmTree(x, z, { h = 6.5, lean = 0.18, dir = rand(TAU), scale = 1, y = 0 } = {}) {
   const segs = 9; let px = 0, py = y, pz = 0; const lx = Math.sin(dir) * lean, lz = Math.cos(dir) * lean;
+  addObstacle({ type: 'circle', x, z, r: 0.24 * scale, top: 3, kind: 'palm', playerOnly: true });
   for (let i = 0; i < segs; i++) {
     const t = i / segs, t2 = (i + 1) / segs; const r0 = lerp(0.2, 0.11, t) * scale, r1 = lerp(0.2, 0.11, t2) * scale;
     const x0 = lx * h * t * t, x1 = lx * h * t2 * t2, z0 = lz * h * t * t, z1 = lz * h * t2 * t2; const y0 = y + t * h, y1 = y + t2 * h;
@@ -84,7 +91,8 @@ function palmTree(x, z, { h = 6.5, lean = 0.18, dir = rand(TAU), scale = 1, y = 
 }
 function tikiHut(x, z, ry = 0, scale = 1, y = 0) {
   const f = mat(x, y, z, ry, { sx: scale, sy: scale, sz: scale }); EXT.huts.push({ x, y, z, ry, scale });
-  [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => BX.add(G.cyl(0.07, 0.08, 2.3, 8), 'palmTrunk', f.clone().multiply(mat(a, 1.15, b))));
+  [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { BX.add(G.cyl(0.07, 0.08, 2.3, 8), 'palmTrunk', f.clone().multiply(mat(a, 1.15, b))); const p = new THREE.Vector3(a, 0, b).applyMatrix4(f); addObstacle({ type: 'circle', x: p.x, z: p.z, r: 0.12, top: 2.3, kind: 'post', playerOnly: true }); });
+  const tp = new THREE.Vector3(0, 0, -0.3).applyMatrix4(f); addObstacle({ type: 'circle', x: tp.x, z: tp.z, r: 0.3, top: 0.5, kind: 'huttable', playerOnly: true });
   BX.add(G.cyl(0.05, 0.05, 2.3, 6), 'palmTrunk', f.clone().multiply(mat(0, 2.35, 0, 0, { rx: Math.PI / 2 }))); BX.add(G.cyl(0.05, 0.05, 2.3, 6), 'palmTrunk', f.clone().multiply(mat(0, 2.35, 0, Math.PI / 2, { rx: Math.PI / 2 })));
   BX.add(new THREE.ConeGeometry(2.1, 1.25, 4, 1), 'thatch', f.clone().multiply(mat(0, 2.95, 0, Math.PI / 4)));
   BX.add(new THREE.ConeGeometry(2.05, 1.2, 4, 1, true), 'thatchDark', f.clone().multiply(mat(0, 2.93, 0, Math.PI / 4)));
@@ -92,7 +100,7 @@ function tikiHut(x, z, ry = 0, scale = 1, y = 0) {
   loungeChair(f, -0.55, 0.2, 0); loungeChair(f, 0.55, 0.2, 0); BX.add(G.cyl(0.25, 0.25, 0.04, 12), 'darkwood', f.clone().multiply(mat(0, 0.45, -0.3))); BX.add(G.cyl(0.03, 0.03, 0.45, 6), 'darkwood', f.clone().multiply(mat(0, 0.22, -0.3)));
 }
 function loungeChair(f, x, z, ry) {
-  const c = f.clone().multiply(mat(x, 0, z, ry));
+  const c = f.clone().multiply(mat(x, 0, z, ry)); const lc = new THREE.Vector3(0, 0, 0).applyMatrix4(c); addObstacle({ type: 'circle', x: lc.x, z: lc.z, r: 0.55, top: 0.6, kind: 'lounger', playerOnly: true });
   BX.add(G.rbox(0.62, 0.09, 1.3, 0.03), 'lounger', c.clone().multiply(mat(0, 0.36, 0.2))); BX.add(G.rbox(0.62, 0.09, 0.7, 0.03), 'lounger', c.clone().multiply(mat(0, 0.6, -0.55, 0, { rx: -0.75 })));
   [[-0.27, 0.7], [0.27, 0.7], [-0.27, -0.3], [0.27, -0.3]].forEach(([lx, lz]) => BX.add(G.box(0.05, 0.32, 0.05), 'darkwood', c.clone().multiply(mat(lx, 0.16, lz))));
 }
@@ -107,18 +115,18 @@ function towerBuilding(x, z, w, d, floors, ry = 0) {
   W.exteriorWindows = W.exteriorWindows || [true];
 }
 function planter(x0, x1, z, { depth = 0.6, h = 0.55 } = {}) {
-  const w = x1 - x0, cx = (x0 + x1) / 2; BX.add(G.box(w, h, depth), 'stone', mat(cx, h / 2, z)); BX.add(G.rbox(w - 0.2, 0.45, depth - 0.15, 0.12, 4), 'hedge', mat(cx, h + 0.2, z));
+  const w = x1 - x0, cx = (x0 + x1) / 2; addObstacle({ type: 'box', x0, x1, z0: z - depth / 2, z1: z + depth / 2, top: h + 0.4, kind: 'planter', playerOnly: true }); BX.add(G.box(w, h, depth), 'stone', mat(cx, h / 2, z)); BX.add(G.rbox(w - 0.2, 0.45, depth - 0.15, 0.12, 4), 'hedge', mat(cx, h + 0.2, z));
   for (let i = 0; i < w * 22; i++) BX.add(G.sph(0.022, 6, 5), Math.random() < 0.72 ? 'flowerPink' : 'flowerWhite', mat(x0 + 0.15 + rand(0, w - 0.3), h + 0.36 + rand(0, 0.16), z + rand(-depth / 2 + 0.1, depth / 2 - 0.1)));
   for (let i = 0; i < w * 14; i++) BX.add(G.sph(0.035, 6, 5), 'hedge', mat(x0 + 0.15 + rand(0, w - 0.3), h + 0.3 + rand(0, 0.14), z + rand(-depth / 2 + 0.08, depth / 2 - 0.08), 0, { sy: 0.5 }));
 }
 function palapa(x, z) {   // thatched entrance canopy on four posts
   const f = mat(x, 0, z, 0);
-  [[-1.3, -0.9], [1.3, -0.9], [-1.3, 0.9], [1.3, 0.9]].forEach(([a, b]) => BX.add(G.cyl(0.09, 0.1, 2.9, 10), 'palmTrunk', f.clone().multiply(mat(a, 1.45, b))));
+  [[-1.3, -0.9], [1.3, -0.9], [-1.3, 0.9], [1.3, 0.9]].forEach(([a, b]) => { BX.add(G.cyl(0.09, 0.1, 2.9, 10), 'palmTrunk', f.clone().multiply(mat(a, 1.45, b))); addObstacle({ type: 'circle', x: x + a, z: z + b, r: 0.13, top: 2.9, kind: 'post', playerOnly: true }); });
   BX.add(new THREE.ConeGeometry(2.4, 1.5, 4, 1), 'thatch', f.clone().multiply(mat(0, 3.55, 0, Math.PI / 4, { sz: 0.75 }))); BX.add(new THREE.ConeGeometry(2.35, 1.45, 4, 1, true), 'thatchDark', f.clone().multiply(mat(0, 3.53, 0, Math.PI / 4, { sz: 0.75 })));
   BX.add(new THREE.CylinderGeometry(2.45, 2.55, 0.24, 4, 1, true), 'thatch', f.clone().multiply(mat(0, 2.85, 0, Math.PI / 4, { sz: 0.75 })));
   BX.add(G.cyl(0.06, 0.06, 2.6, 6), 'palmTrunk', f.clone().multiply(mat(0, 2.95, 0.9, 0, { rz: Math.PI / 2 }))); BX.add(G.cyl(0.06, 0.06, 2.6, 6), 'palmTrunk', f.clone().multiply(mat(0, 2.95, -0.9, 0, { rz: Math.PI / 2 })));
 }
-function tikiTorch(x, z) { BX.add(G.cyl(0.03, 0.04, 1.8, 6), 'palmTrunk', mat(x, 0.9, z)); BX.add(G.cyl(0.08, 0.05, 0.2, 8), 'black', mat(x, 1.85, z)); const flame = new THREE.Mesh(G.sph(0.07, 8, 6), M.bulbOff); flame.position.set(x, 2.0, z); flame.scale.set(1, 1.6, 1); W.scene.add(flame); EXT.torches.push(flame); return flame; }
+function tikiTorch(x, z) { addObstacle({ type: 'circle', x, z, r: 0.1, top: 1.8, kind: 'torch', playerOnly: true }); BX.add(G.cyl(0.03, 0.04, 1.8, 6), 'palmTrunk', mat(x, 0.9, z)); BX.add(G.cyl(0.08, 0.05, 0.2, 8), 'black', mat(x, 1.85, z)); const flame = new THREE.Mesh(G.sph(0.07, 8, 6), M.bulbOff); flame.position.set(x, 2.0, z); flame.scale.set(1, 1.6, 1); W.scene.add(flame); EXT.torches.push(flame); return flame; }
 
 function buildExteriorMaterials() {
   const std = (o) => new THREE.MeshStandardMaterial(o);
@@ -147,17 +155,36 @@ function buildExteriorMaterials() {
   M.cloud = new THREE.SpriteMaterial({ map: cloudTexture(), transparent: true, depthWrite: false, opacity: 0.85, fog: false });
   M.gull = std({ color: 0xf4f4f2, roughness: 0.9 }); M.gullWing = std({ color: 0xa9adb3, roughness: 0.9, side: THREE.DoubleSide });
   M.umbrella = std({ color: 0xc9603a, roughness: 0.85, side: THREE.DoubleSide }); M.towerRail = new THREE.MeshPhysicalMaterial({ color: 0xdfe8ec, transparent: true, opacity: 0.3, roughness: 0.1, metalness: 0.1, side: THREE.DoubleSide, depthWrite: false });
+  upgradeExteriorMaterials();
+}
+function upgradeExteriorMaterials() {   // scanned surfaces for the resort (see assets.js); `world` = box-mapped in metres
+  if (!ASSETS.enabled || !ASSETS.manifest) return;
+  upgradeMaterial(M.sand, 'aerial_beach_01', { world: true, sizeScale: 0.13, normalScale: 1.1, roughness: 1, color: 0xf6ead6, aniso: 16 });
+  upgradeMaterial(M.wetSand, 'damp_beach_sand', { world: true, sizeScale: 1.5, normalScale: 0.6, roughness: 0.55, color: 0xd9ccb4, aniso: 16 });
+  upgradeMaterial(M.deck, 'wood_floor_deck', { world: true, sizeScale: 1.3, normalScale: 0.7, roughness: 0.9, aniso: 16 });
+  upgradeMaterial(M.pavers, 'concrete_pavers_02', { world: true, sizeScale: 1.1, normalScale: 0.7, roughness: 1, color: 0xf0e6d6, aniso: 16 });
+  upgradeMaterial(M.stone, 'coral_stone_wall', { world: true, normalScale: 1.0, roughness: 1 });
+  upgradeMaterial(M.stucco, 'beige_wall_001', { world: true, normalScale: 0.6, roughness: 1, color: 0xfbf3e6 });
+  upgradeMaterial(M.tower, 'beige_wall_001', { world: true, sizeScale: 2.5, normalScale: 0.5, roughness: 1, color: 0xf6ecda });
+  upgradeMaterial(M.poolCoping, 'patio_tiles', { world: true, normalScale: 0.6, roughness: 0.9, color: 0xf7ece0 });
+  upgradeMaterial(M.poolBasin, 'blue_floor_tiles_01', { world: true, sizeScale: 0.5, normalScale: 0.5, roughness: 0.5, color: 0xbfe8f0 });
+  upgradeMaterial(M.lounger, 'dark_wooden_planks', { world: true, sizeScale: 0.6, normalScale: 0.5, roughness: 0.9, color: 0xb59a7a });
+  upgradeMaterial(M.thatch, 'reed_roof_04', { repeat: [5, 1.4], normalScale: 0.9, roughness: 1 });
+  upgradeMaterial(M.palmTrunk, 'palm_tree_bark', { repeat: [1, 1.5], normalScale: 0.9, roughness: 1 });
+  upgradeMaterial(M.umbrella, 'rough_linen', { repeat: [8, 1.5], normalScale: 0.5, roughness: 1, color: 0xe8b07a });
 }
 
 function buildExterior() {
   buildExteriorMaterials();
-  const { x0, x1, z1 } = ROOM; const addm = (geo, m, x, y, z, ry = 0, shadow = false) => { const me = new THREE.Mesh(geo, m); me.position.set(x, y, z); me.rotation.y = ry; me.receiveShadow = true; me.castShadow = shadow; W.scene.add(me); return me; };
+  const { x0, x1, z1 } = ROOM; const addm = (geo, m, x, y, z, ry = 0, shadow = false, rx = 0) => { const me = new THREE.Mesh(geo, m); me.position.set(x, y, z); me.rotation.set(rx, ry, 0); me.receiveShadow = true; me.castShadow = shadow; W.scene.add(me); applyWorldUV(me); return me; };
   // wooden deck wrapping the café front and left side, then pavers around the pool
   addm(G.box(32, 0.06, EXT.deckZ1 - EXT.deckZ0 + 0.3), M.deck, 0, 0.0, (EXT.deckZ0 + EXT.deckZ1) / 2 + 0.15);
   addm(G.box(7, 0.06, 20), M.deck, x0 - 3.5, 0.0, 0);
   addm(G.box(40, 0.05, EXT.sandZ0 - EXT.deckZ1), M.pavers, 0, -0.01, (EXT.deckZ1 + EXT.sandZ0) / 2);
   // the café seen from outside: warm-white stucco cladding with the window and door openings, a roof and a thatched entrance canopy
   const T = 0.25 + 0.08; const frontX = mat(x1 + 0.4, 0, z1 + T, Math.PI), leftX = mat(x0 - T, 0, z1 + 0.4, Math.PI / 2), rightX = mat(x1 + T, 0, ROOM.z0 - 0.4, -Math.PI / 2), backX = mat(x0 - 0.4, 0, ROOM.z0 - T, 0);
+  // ground under the whole resort (the beach is a level lower, beyond the retaining wall)
+  addm(G.plane(313, 330), M.sand, 143.4, -0.045, EXT.sandZ0 - 165, 0, false, -Math.PI / 2);
   const shell = (frame, len, openings) => { const add = (a, b, y0, y1) => { if (b - a > 0.001 && y1 - y0 > 0.001) BX.add(G.box(b - a, y1 - y0, 0.08), 'stucco', frame.clone().multiply(mat((a + b) / 2, (y0 + y1) / 2, -0.04))); }; const xs = [0, ...openings.flatMap(o => [o[0], o[1]]), len]; for (let i = 0; i < xs.length - 1; i += 2) add(xs[i], xs[i + 1], 0, ROOM.h + 0.35); openings.forEach(o => { add(o[0], o[1], 0, o[2]); add(o[0], o[1], o[3], ROOM.h + 0.35); }); };
   shell(frontX, ROOM.w + 0.8, [[1.2, 4.2, 0.85, 2.75], [4.8, 7.8, 0.85, 2.75], [8.8, 9.8, 0, 2.5]]); shell(leftX, ROOM.d + 0.8, [[1.7, 4.7, 0.7, 2.6]]); shell(rightX, ROOM.d + 0.8, []); shell(backX, ROOM.w + 0.8, []);
   const roof = new THREE.Mesh(G.box(ROOM.w + 0.9, 0.3, ROOM.d + 0.9), M.stucco); roof.position.set(0, ROOM.h + 0.3, 0); roof.castShadow = true; W.ceilingGroup.add(roof);
@@ -169,6 +196,7 @@ function buildExterior() {
   // pool
   const pw = EXT.poolX1 - EXT.poolX0, pd = EXT.poolZ1 - EXT.poolZ0, pcx = (EXT.poolX0 + EXT.poolX1) / 2, pcz = (EXT.poolZ0 + EXT.poolZ1) / 2;
   addm(G.box(pw + 1.2, 0.12, pd + 1.2), M.poolCoping, pcx, 0.06, pcz);
+  addObstacle({ type: 'box', x0: EXT.poolX0, x1: EXT.poolX1, z0: EXT.poolZ0, z1: EXT.poolZ1, top: 0.5, kind: 'pool', playerOnly: true });
   addm(G.box(pw + 0.02, 0.5, pd + 0.02), M.poolBasin, pcx, -0.25, pcz).receiveShadow = true;
   const caus = addm(G.plane(pw - 0.05, pd - 0.05), M.caustic, pcx, 0.005, pcz); caus.rotation.x = -Math.PI / 2; caus.userData.noAO = true;
   const pool = addm(G.plane(pw, pd), M.poolWater, pcx, 0.04, pcz); pool.rotation.x = -Math.PI / 2; pool.receiveShadow = false; pool.renderOrder = 3;
@@ -180,27 +208,56 @@ function buildExterior() {
   // the beach sits a step below the terrace: retaining wall, steps, white sand, wet sand and the ocean
   const sy = EXT.sandY;
   BX.add(G.box(60, 1.3, 0.5), 'stone', mat(0, sy + 0.65, EXT.sandZ0 + 0.25));
+  addObstacle({ type: 'box', x0: -30, x1: -0.45, z0: EXT.sandZ0 - 0.05, z1: EXT.sandZ0 + 0.55, top: 1.3, kind: 'wall', playerOnly: true }); addObstacle({ type: 'box', x0: 2.85, x1: 30, z0: EXT.sandZ0 - 0.05, z1: EXT.sandZ0 + 0.55, top: 1.3, kind: 'wall', playerOnly: true });
+  addObstacle({ type: 'box', x0: -13.6, x1: -12.9, z0: -35, z1: 35, top: 1.3, kind: 'wall', playerOnly: true });
   for (let i = 0; i < 5; i++) BX.add(G.box(3.2, 0.24, 0.45), 'poolCoping', mat(1.2, sy + 1.2 - i * 0.24 - 0.12, EXT.sandZ0 + 0.5 + i * 0.45));
-  addm(G.plane(260, EXT.shoreZ - EXT.sandZ0 + 4), M.sand, 0, sy, (EXT.sandZ0 + EXT.shoreZ) / 2 + 1).rotation.x = -Math.PI / 2;
-  addm(G.plane(260, 3.5), M.wetSand, 0, sy + 0.004, EXT.shoreZ - 1.3).rotation.x = -Math.PI / 2;
+  addm(G.plane(260, EXT.shoreZ - EXT.sandZ0 + 4), M.sand, 0, sy, (EXT.sandZ0 + EXT.shoreZ) / 2 + 1, 0, false, -Math.PI / 2);
+  addm(G.plane(260, 3.5), M.wetSand, 0, sy + 0.004, EXT.shoreZ - 1.3, 0, false, -Math.PI / 2);
   const ocean = addm(new THREE.PlaneGeometry(320, 110, 220, 90), M.water, 0, sy + 0.008, EXT.shoreZ + 53); ocean.rotation.x = -Math.PI / 2; ocean.receiveShadow = false; ocean.frustumCulled = false; W.ocean = ocean;   // subdivided near water (real swell)
   const far = addm(G.plane(1400, 900), M.water, 0, sy + 0.0, EXT.shoreZ + 106 + 450); far.rotation.x = -Math.PI / 2; far.receiveShadow = false;
   BX.add(G.box(70, 1.3, 0.5), 'stone', mat(x0 - 7.25 - 35 + 35, sy + 0.65, 0).multiply(mat(0, 0, 0, Math.PI / 2)));  // wall along the left side of the deck
-  addm(G.plane(70, 40), M.sand, x0 - 42, sy, 0).rotation.x = -Math.PI / 2;
+  addm(G.plane(70, 40), M.sand, x0 - 42, sy, 0, 0, false, -Math.PI / 2);
   // thatched huts in rows like the resort beach, with loungers
   for (let r = 0; r < 2; r++) for (let i = -6; i <= 6; i++) { const x = i * 6.2 + (r % 2) * 3.1 + rand(-0.5, 0.5), z = 22.5 + r * 5.2 + rand(-0.6, 0.6); if (Math.abs(x) < 2 && r === 0) continue; tikiHut(x, z, rand(-0.2, 0.2), 0.95, sy); }
   for (let i = 0; i < 16; i++) palmTree(rand(-45, 45), rand(20.5, 22.5), { h: rand(4.5, 7), lean: rand(0.1, 0.3), y: sy });
   for (let i = 0; i < 8; i++) palmTree(x0 - rand(8, 40), rand(-12, 12), { h: rand(4.5, 7), lean: rand(0.1, 0.3), y: sy });
   // resort towers on either side
   towerBuilding(19, 11, 12, 13, 13); towerBuilding(-24, 2, 11, 16, 11, 0);
+  addObstacle({ type: 'box', x0: 12.5, x1: 25.5, z0: 4, z1: 18, top: 40, kind: 'tower', playerOnly: true });
+  buildExteriorProps(sy);
   BX.build(W.scene, { shadow: true });
   // clouds
   W.clouds = []; for (let i = 0; i < 9; i++) { const s = new THREE.Sprite(M.cloud.clone()); s.position.set(rand(-160, 160), rand(28, 60), 120 + rand(0, 160)); const sc = rand(40, 90); s.scale.set(sc, sc * 0.45, 1); W.scene.add(s); W.clouds.push(s); }
 }
+// scanned props around the resort (only when the asset pack is present — nothing here has a procedural twin)
+function buildExteriorProps(sy) {
+  const { x0, z1 } = ROOM;
+  // bistro sets on the terrace (walkable obstacles), lantern lamps along the deck edge, a lifebuoy by the pool
+  [[-6.6, 7.3, 0.35], [4.3, 7.7, -0.4], [10.2, 7.1, 0.9]].forEach(([x, z, ry]) => { if (placeModel('outdoor_table_chair_set_01', x, 0.03, z, ry, { fit: { h: 0.86 } })) { const c = Math.cos(ry), s = Math.sin(ry); const hw = Math.abs(c) * 0.95 + Math.abs(s) * 0.45, hd = Math.abs(s) * 0.95 + Math.abs(c) * 0.45; addObstacle({ type: 'box', x0: x - hw, x1: x + hw, z0: z - hd, z1: z + hd, top: 0.75, kind: 'bistro' }); } });
+  EXT.lamps = [];
+  [[-12.5, EXT.deckZ1 - 0.35], [-1.0, EXT.deckZ1 - 0.35], [5.2, EXT.deckZ1 - 0.35], [12.5, EXT.deckZ1 - 0.35], [x0 - 6.8, -6], [x0 - 6.8, 5]].forEach(([x, z]) => {
+    if (!placeModel('street_lamp_02', x, 0.03, z, 0, { fit: { h: 2.3 } })) return;
+    addObstacle({ type: 'circle', x, z, r: 0.22, top: 2.3, kind: 'lamp' });
+    const l = new THREE.PointLight(0xffc27a, 0, 9, 2); l.position.set(x, 2.05, z); W.scene.add(l); EXT.lamps.push(l);
+  });
+  placeModel('lifebuoy', EXT.poolX1 + 1.3, 1.25, EXT.poolZ0 - 0.9, Math.PI / 2, { align: 'center', fit: { h: 0.75 } }); BX.add(G.cyl(0.04, 0.045, 1.7, 8), 'darkwood', mat(EXT.poolX1 + 1.3, 0.85, EXT.poolZ0 - 0.9));
+  placeModel('wicker_basket_01', EXT.poolX0 - 0.2, 0.06, EXT.poolZ1 + 2.6, 0.3, { fit: { h: 0.34 }, shadow: false });
+  // on the beach: a stone fire pit in the gap between the huts (lit at night), lanterns on every hut table, a wooden pier out over the water
+  if (placeModel('stone_fire_pit', 0, sy, 23.6, 0, { fit: { w: 1.6 } })) {
+    const light = new THREE.PointLight(0xff9a3c, 0, 14, 2); light.position.set(0, sy + 0.6, 23.6); W.scene.add(light);
+    const flames = [0, 1, 2].map(i => { const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: radialTexture(64, 'rgba(255,190,90,1)', 'rgba(255,90,20,0)'), color: 0xffb060, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.8, fog: false })); s.position.set(rand(-0.15, 0.15), sy + 0.55, 23.6 + rand(-0.15, 0.15)); s.scale.set(0.5, 0.9, 1); s.visible = false; W.scene.add(s); return s; });
+    EXT.fire = { light, flames };
+    for (let i = 0; i < 5; i++) BX.add(G.cyl(0.06, 0.07, 0.6, 7), 'palmTrunk', mat(rand(-0.5, 0.5), sy + 0.28, 23.6 + rand(-0.4, 0.4), rand(TAU), { rx: rand(-0.5, 0.5), rz: rand(-0.5, 0.5) }));   // logs
+    addObstacle({ type: 'circle', x: 0, z: 23.6, r: 0.9, top: 0.4, kind: 'firepit' });
+  }
+  EXT.huts.forEach(h => { const f = mat(h.x, h.y, h.z, h.ry, { sx: h.scale, sy: h.scale, sz: h.scale }); const p = new THREE.Vector3(0, 0.47, -0.3).applyMatrix4(f); placeModel('Lantern_01', p.x, p.y, p.z, h.ry + rand(-0.5, 0.5), { fit: { h: 0.3 }, shadow: false }); });
+  placeModel('modular_wooden_pier', -21, sy - 0.05, EXT.shoreZ + 4, 0, { fit: { w: 3.4 }, shadow: true });
+}
 function updateExterior(dt) {
   const t = W.time; const sd = W.sun.position.clone().normalize(); const cam = W.camera.position;
   if (M.caustic) M.caustic.uniforms.time.value = t;
-  for (const mtl of [M.water, M.poolWater]) { const u = mtl.uniforms; u.time.value = t; u.sunDir.value.copy(sd); u.camPos.value.copy(cam); u.sunColor.value.copy(W.sun.color); if (W.sky) u.skyColor.value.copy(W.sky.material.uniforms.horizonColor.value).lerp(W.sky.material.uniforms.topColor.value, 0.35); }
+  const waterLight = clamp(0.05 + W.hemi.intensity * 1.9 + clamp(sd.y * 3, 0, 1) * 0.45, 0.05, 1);
+  for (const mtl of [M.water, M.poolWater]) { const u = mtl.uniforms; u.time.value = t; u.ambient.value = waterLight; u.sunDir.value.copy(sd); u.camPos.value.copy(cam); u.sunColor.value.copy(W.sun.color); if (W.sky) u.skyColor.value.copy(W.sky.material.uniforms.horizonColor.value).lerp(W.sky.material.uniforms.topColor.value, 0.35); }
   EXT.palms.forEach((c, i) => { c.rotation.z = Math.sin(t * 0.7 + c.userData.sway) * 0.03; c.rotation.x = Math.cos(t * 0.5 + c.userData.sway) * 0.025; });
   if (W.clouds) W.clouds.forEach((c, i) => { c.position.x += dt * (0.4 + i * 0.05); if (c.position.x > 200) c.position.x = -200; });
   const night = W.isNight ? 1 : 0; EXT.torches.forEach(f => { f.material = night ? M.bulb : M.bulbOff; f.scale.y = night ? 1.6 + Math.sin(t * 9 + f.position.x) * 0.25 : 1.2; });

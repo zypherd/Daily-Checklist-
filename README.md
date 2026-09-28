@@ -1,8 +1,8 @@
 # Daily Checklist — The Rose Teacup Café
 
-A daily checklist that lives inside a small, living 3D coffee shop on a beach resort terrace — pool, palms, thatched huts, people on the sand and the ocean outside the windows. Rendered with cascaded shadows, ambient occlusion, bloom, sky-based reflections, sun shafts with drifting dust, and a film-style finish. Five cats with their own
+A daily checklist that lives inside a small, living 3D coffee shop on a beach resort terrace — pool, palms, thatched huts, people on the sand and the ocean outside the windows. The sky is a set of real photographs of one sky through a whole day (dawn, noon, sunset, moonrise), the surfaces are scanned materials and the furniture is scanned, all streamed in from the `assets/` folder on top of a procedural world that works on its own. Rendered with cascaded shadows, ambient occlusion, bloom, sky-based reflections, sun shafts with drifting dust, and a film-style finish. Five cats with their own
 personalities wander, nap, climb, play and greet each other while you work through your day's
-tasks. Still a single self-contained `index.html` — no build step, no server, no backend.
+tasks. Still a single `index.html` with no build step, no server and no backend; the asset pack beside it is optional.
 
 ## Use it
 
@@ -14,6 +14,15 @@ before.
 If WebGL is unavailable or the CDN can't be reached (offline), the app automatically falls back to
 the original 2D café — the checklist works either way. Add `?classic` to the URL (or use *Help →
 Classic 2D café*) to choose the classic view; the *3D Café* button in the header brings you back.
+
+**The real-world asset pack.** `assets/` (16 MB, all CC0 from [Poly Haven](https://polyhaven.com), see
+`assets/CREDITS.md`) holds 13 captured pure-sky HDRIs of one location through a full day, 26 scanned PBR texture
+sets (oak floor, plaster, subway tiles, leather, linen, coral stone, reed thatch, palm bark, beach sand…) and 24
+scanned models (dining chairs, pedestal tables, bar stools, sofa, armchair, marble coffee table, potted plants,
+ceiling fans, pendant lamps, a brass cash register, tea set, bistro sets, lantern posts, lifebuoy, fire pit, hut
+lanterns, a wooden pier). It streams in behind the live world when the page is served over http(s) — GitHub Pages,
+or any local server such as `python3 -m http.server`. Opened straight from disk (`file://`) or with `?noassets`,
+the café uses its built-in procedural sky, textures and furniture instead; nothing else changes.
 
 ## Host it
 
@@ -27,6 +36,7 @@ imports, so it works from Pages, from a local server, or straight from disk.
 | --- | --- |
 | Look around (first person) | click the café, then move the mouse · `Esc` releases |
 | Walk / run / crouch to cat level | `W A S D` · `Shift` · `C` |
+| Go outside: the front door swings open as you reach it — terrace, pool deck, the steps down to the beach and the water's edge | just walk |
 | Switch camera (first person → third person → orbit / overhead) | `V` · reset with `R` |
 | Change your outfit (casual, or work shirt + slacks in beige / black / blue / pink) | `O` |
 | Orbit mode | drag to rotate · wheel to zoom · `WASD` pan · `Q`/`E` height |
@@ -36,6 +46,10 @@ imports, so it works from Pages, from a local server, or straight from disk.
 | Open / close the checklist | `Tab` · or click the task board behind the bar |
 | Sound settings · help | `M` · `H` |
 | Speed up / slow down the day | `[` `]` |
+
+The day runs on a 20-minute cycle. With the asset pack, the sky blends between the photographs by the clock
+(the sun and its shadows follow the sun in the photographs; the moon rises around nine); the fire pit on the
+beach and the lantern posts light up at night.
 
 ## Checklist features (all preserved)
 

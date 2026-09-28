@@ -41,13 +41,14 @@ function applyCSM(root) {   // patch every lit material once so the cascades ble
 function setupEnvironment() {
   POST.pmrem = new THREE.PMREMGenerator(W.renderer); POST.pmrem.compileEquirectangularShader();
   const s = new THREE.Scene(); const sky = new THREE.Mesh(W.sky.geometry, W.sky.material); s.add(sky);
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(400, 32), new THREE.MeshBasicMaterial({ color: 0xcdbfa6 })); ground.rotation.x = -Math.PI / 2; ground.position.y = -1.5; s.add(ground);
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(400, 32), new THREE.MeshBasicMaterial({ color: 0xcdbfa6 })); ground.rotation.x = -Math.PI / 2; ground.position.y = -1.5; s.add(ground); POST.envGround = ground;
   POST.envScene = s; updateEnvironment(true);
 }
 function updateEnvironment(force) {
   if (!POST.envScene) return; const now = performance.now();
   if (!force && (now - POST.envAt < 4000 || Math.abs(W.dayTime - POST.envDay) < 0.08)) return;
   POST.envAt = now; POST.envDay = W.dayTime;
+  if (W.groundRadiance && POST.envGround) POST.envGround.material.color.copy(W.groundRadiance);
   const old = W.scene.environment; const rt = POST.pmrem.fromScene(POST.envScene, 0, 0.1, 900); W.scene.environment = rt.texture; if (old) old.dispose();
 }
 

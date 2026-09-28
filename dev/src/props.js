@@ -1,18 +1,24 @@
 // ─── Furniture & prop builders. Each one adds batched geometry plus nav/interaction data. ──
 const perchNames = {};
 function roundTable(x, z, r = 0.45, h = 0.75) {
-  B.add(G.cyl(r, r, 0.035, 32), 'walnut', mat(x, h - 0.0175, z));
-  B.add(G.cyl(0.035, 0.035, h - 0.06, 12), 'black', mat(x, (h - 0.06) / 2 + 0.03, z));
-  B.add(G.cyl(0.22, 0.26, 0.03, 24), 'black', mat(x, 0.015, z));
+  const geometry = (Bt) => {
+    Bt.add(G.cyl(r, r, 0.035, 32), 'walnut', mat(x, h - 0.0175, z));
+    Bt.add(G.cyl(0.035, 0.035, h - 0.06, 12), 'black', mat(x, (h - 0.06) / 2 + 0.03, z));
+    Bt.add(G.cyl(0.22, 0.26, 0.03, 24), 'black', mat(x, 0.015, z));
+  };
+  if (!placeModel('round_wooden_table_01', x, 0, z, rand(TAU), { fit: { w: r * 2 + 0.02, d: r * 2 + 0.02, h: h + 0.005 }, stretch: true, fallback: () => geometry(BL) })) geometry(B);
   addObstacle({ type: 'circle', x, z, r: r, top: h, kind: 'table', name: 'table' });
   addInteractBox('A café table', x, h - 0.02, z, r * 2, 0.05, r * 2, () => hoverOnly());
   return { x, z, r, h };
 }
 function squareTable(x, z, w = 0.8, h = 0.75, ry = 0) {
   const f = mat(x, 0, z, ry);
-  B.add(G.rbox(w, 0.04, w, 0.01), 'walnut', f.clone().multiply(mat(0, h - 0.02, 0)));
-  B.add(G.box(w - 0.12, 0.08, w - 0.12), 'darkwood', f.clone().multiply(mat(0, h - 0.08, 0)));
-  const o = w / 2 - 0.05; [[-o, -o], [o, -o], [-o, o], [o, o]].forEach(([lx, lz]) => B.add(G.box(0.05, h - 0.04, 0.05), 'walnut', f.clone().multiply(mat(lx, (h - 0.04) / 2, lz))));
+  const geometry = (Bt) => {
+    Bt.add(G.rbox(w, 0.04, w, 0.01), 'walnut', f.clone().multiply(mat(0, h - 0.02, 0)));
+    Bt.add(G.box(w - 0.12, 0.08, w - 0.12), 'darkwood', f.clone().multiply(mat(0, h - 0.08, 0)));
+    const o = w / 2 - 0.05; [[-o, -o], [o, -o], [-o, o], [o, o]].forEach(([lx, lz]) => Bt.add(G.box(0.05, h - 0.04, 0.05), 'walnut', f.clone().multiply(mat(lx, (h - 0.04) / 2, lz))));
+  };
+  if (!placeModel('wooden_table_02', x, 0, z, ry, { fit: { w: w + 0.05, d: w + 0.05, h: h + 0.005 }, stretch: true, fallback: () => geometry(BL) })) geometry(B);
   addObstacle({ type: 'box', x0: x - w / 2, x1: x + w / 2, z0: z - w / 2, z1: z + w / 2, top: h, kind: 'table' });
   return { x, z, w, h };
 }
@@ -24,19 +30,23 @@ const hoverOnly = () => {};
 
 function chair(x, z, ry = 0, { seatKey = 'chairSeat', cushion = true } = {}) {
   const f = mat(x, 0, z, ry); const sh = 0.45;
-  B.add(G.cyl(0.21, 0.19, 0.035, 24), 'walnut', f.clone().multiply(mat(0, sh - 0.0175, 0)));
-  if (cushion) B.add(G.lathe([[0, 0], [0.17, 0], [0.19, 0.015], [0.185, 0.035], [0.15, 0.045], [0, 0.048]], 24), seatKey, f.clone().multiply(mat(0, sh, 0)));
-  const legs = [[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]];
-  legs.forEach(([lx, lz]) => B.add(G.cyl(0.016, 0.02, sh - 0.03, 8), 'walnut', f.clone().multiply(mat(lx * 1.05, (sh - 0.03) / 2, lz * 1.05, 0, { rx: -lz * 0.18, rz: lx * 0.18 }))));
-  // stretchers
-  B.add(G.cyl(0.01, 0.01, 0.3, 6), 'walnut', f.clone().multiply(mat(0, 0.18, -0.15, 0, { rz: Math.PI / 2 })));
-  B.add(G.cyl(0.01, 0.01, 0.3, 6), 'walnut', f.clone().multiply(mat(0, 0.18, 0.15, 0, { rz: Math.PI / 2 })));
-  // bentwood back: two leaning posts, two solid steam-bent hoops and three spindles (all solid tubes — no open shells)
-  B.add(G.cyl(0.016, 0.019, 0.52, 10), 'walnut', f.clone().multiply(mat(-0.145, sh + 0.25, -0.15, 0, { rx: 0.12 })));
-  B.add(G.cyl(0.016, 0.019, 0.52, 10), 'walnut', f.clone().multiply(mat(0.145, sh + 0.25, -0.15, 0, { rx: 0.12 })));
-  const hoop = (y, zc) => B.add(G.torus(0.16, 0.016, 8, 22, Math.PI * 0.7), 'walnut', f.clone().multiply(mat(0, y, zc, Math.PI * 0.15, { rx: -Math.PI / 2 })));
-  hoop(sh + 0.5, -0.12); hoop(sh + 0.3, -0.115);
-  [-0.08, 0, 0.08].forEach(sx => B.add(G.cyl(0.009, 0.009, 0.2, 6), 'walnut', f.clone().multiply(mat(sx, sh + 0.4, -0.12 - Math.sqrt(0.16 * 0.16 - sx * sx), 0, { rx: 0.1 }))));
+  const geometry = (Bt) => {
+    Bt.add(G.cyl(0.21, 0.19, 0.035, 24), 'walnut', f.clone().multiply(mat(0, sh - 0.0175, 0)));
+    if (cushion) Bt.add(G.lathe([[0, 0], [0.17, 0], [0.19, 0.015], [0.185, 0.035], [0.15, 0.045], [0, 0.048]], 24), seatKey, f.clone().multiply(mat(0, sh, 0)));
+    const legs = [[-0.15, -0.15], [0.15, -0.15], [-0.15, 0.15], [0.15, 0.15]];
+    legs.forEach(([lx, lz]) => Bt.add(G.cyl(0.016, 0.02, sh - 0.03, 8), 'walnut', f.clone().multiply(mat(lx * 1.05, (sh - 0.03) / 2, lz * 1.05, 0, { rx: -lz * 0.18, rz: lx * 0.18 }))));
+    // stretchers
+    Bt.add(G.cyl(0.01, 0.01, 0.3, 6), 'walnut', f.clone().multiply(mat(0, 0.18, -0.15, 0, { rz: Math.PI / 2 })));
+    Bt.add(G.cyl(0.01, 0.01, 0.3, 6), 'walnut', f.clone().multiply(mat(0, 0.18, 0.15, 0, { rz: Math.PI / 2 })));
+    // bentwood back: two leaning posts, two solid steam-bent hoops and three spindles (all solid tubes — no open shells)
+    Bt.add(G.cyl(0.016, 0.019, 0.52, 10), 'walnut', f.clone().multiply(mat(-0.145, sh + 0.25, -0.15, 0, { rx: 0.12 })));
+    Bt.add(G.cyl(0.016, 0.019, 0.52, 10), 'walnut', f.clone().multiply(mat(0.145, sh + 0.25, -0.15, 0, { rx: 0.12 })));
+    const hoop = (y, zc) => Bt.add(G.torus(0.16, 0.016, 8, 22, Math.PI * 0.7), 'walnut', f.clone().multiply(mat(0, y, zc, Math.PI * 0.15, { rx: -Math.PI / 2 })));
+    hoop(sh + 0.5, -0.12); hoop(sh + 0.3, -0.115);
+    [-0.08, 0, 0.08].forEach(sx => Bt.add(G.cyl(0.009, 0.009, 0.2, 6), 'walnut', f.clone().multiply(mat(sx, sh + 0.4, -0.12 - Math.sqrt(0.16 * 0.16 - sx * sx), 0, { rx: 0.1 }))));
+  };
+  // scanned dining chair (tufted leather, dark legs); the seat lands at ≈0.47 m like the procedural one
+  if (!placeModel('dining_chair_02', x, 0, z, ry, { fit: { h: 0.97 }, fallback: () => geometry(BL) })) geometry(B);
   addObstacle({ type: 'box', x0: x - 0.22, x1: x + 0.22, z0: z - 0.22, z1: z + 0.22, top: sh + 0.03, kind: 'chair' });
   const fwd = { x: Math.sin(ry), z: Math.cos(ry) };   // chair faces local +Z
   const p = addPerch({ name: 'a chair', kind: 'chair', x, z, hw: 0.14, hd: 0.14, y: sh + 0.03, comfort: 0.55, ry, approach: [{ x: x + fwd.x * 0.6, z: z + fwd.z * 0.6 }, { x: x - fwd.z * 0.6, z: z + fwd.x * 0.6 }, { x: x + fwd.z * 0.6, z: z - fwd.x * 0.6 }] });
@@ -44,24 +54,31 @@ function chair(x, z, ry = 0, { seatKey = 'chairSeat', cushion = true } = {}) {
   return p;
 }
 function barStool(x, z, sh = 0.72) {
-  B.add(G.cyl(0.18, 0.17, 0.04, 20), 'walnut', mat(x, sh - 0.02, z));
-  B.add(G.cyl(0.17, 0.17, 0.025, 20), 'leather', mat(x, sh + 0.012, z));
-  [[-0.11, -0.11], [0.11, -0.11], [-0.11, 0.11], [0.11, 0.11]].forEach(([lx, lz]) => B.add(G.cyl(0.012, 0.014, sh - 0.04, 8), 'black', mat(x + lx * 1.15, (sh - 0.04) / 2, z + lz * 1.15, 0, { rx: -lz * 1.2, rz: lx * 1.2 })));
-  B.add(G.torus(0.15, 0.008, 6, 20), 'black', mat(x, 0.24, z, 0, { rx: Math.PI / 2 }));
+  const geometry = (Bt) => {
+    Bt.add(G.cyl(0.18, 0.17, 0.04, 20), 'walnut', mat(x, sh - 0.02, z));
+    Bt.add(G.cyl(0.17, 0.17, 0.025, 20), 'leather', mat(x, sh + 0.012, z));
+    [[-0.11, -0.11], [0.11, -0.11], [-0.11, 0.11], [0.11, 0.11]].forEach(([lx, lz]) => Bt.add(G.cyl(0.012, 0.014, sh - 0.04, 8), 'black', mat(x + lx * 1.15, (sh - 0.04) / 2, z + lz * 1.15, 0, { rx: -lz * 1.2, rz: lx * 1.2 })));
+    Bt.add(G.torus(0.15, 0.008, 6, 20), 'black', mat(x, 0.24, z, 0, { rx: Math.PI / 2 }));
+  };
+  if (!placeModel('bar_chair_round_01', x, 0, z, rand(TAU), { fit: { h: sh + 0.03 }, fallback: () => geometry(BL) })) geometry(B);
   addObstacle({ type: 'circle', x, z, r: 0.19, top: sh + 0.03, kind: 'stool' });
   return addPerch({ name: 'a bar stool', kind: 'stool', x, z, hw: 0.11, hd: 0.11, y: sh + 0.03, comfort: 0.4, view: 0.2, approach: [{ x, z: z + 0.55 }, { x: x - 0.55, z }, { x: x + 0.55, z }] });
 }
-function couch(x, z, ry = 0, len = 2.2, { fabric = 'velvet', name = 'the velvet couch' } = {}) {
+function couch(x, z, ry = 0, len = 2.2, { fabric = 'velvet', name = 'the velvet couch', model = 'Sofa_01', tint = 0xc98a9a } = {}) {
   const f = mat(x, 0, z, ry); const depth = 0.9, sh = 0.44;
-  B.add(G.rbox(len, 0.3, depth, 0.03), 'darkwood', f.clone().multiply(mat(0, 0.17, 0)));
-  const cw = (len - 0.5) / 2;
-  [-1, 1].forEach(s => { B.add(G.rbox(cw - 0.02, 0.18, depth - 0.3, 0.06, 4), fabric, f.clone().multiply(mat(s * cw / 2, sh - 0.09, 0.1))); B.add(G.rbox(cw - 0.02, 0.5, 0.18, 0.06, 4), fabric, f.clone().multiply(mat(s * cw / 2, sh + 0.22, -depth / 2 + 0.16, 0, { rx: -0.12 }))); });
-  [-1, 1].forEach(s => B.add(G.rbox(0.25, 0.6, depth, 0.05, 4), fabric, f.clone().multiply(mat(s * (len / 2 - 0.125), 0.32, 0))));
-  B.add(G.rbox(len, 0.45, 0.14, 0.03), 'darkwood', f.clone().multiply(mat(0, 0.5, -depth / 2 + 0.05)));
-  [[-len / 2 + 0.1, -depth / 2 + 0.1], [len / 2 - 0.1, -depth / 2 + 0.1], [-len / 2 + 0.1, depth / 2 - 0.1], [len / 2 - 0.1, depth / 2 - 0.1]].forEach(([lx, lz]) => B.add(G.cyl(0.03, 0.02, 0.06, 8), 'black', f.clone().multiply(mat(lx, 0.03, lz))));
-  // throw cushions
-  B.add(G.rbox(0.36, 0.36, 0.1, 0.04, 4), 'fabricRose', f.clone().multiply(mat(-len / 2 + 0.5, sh + 0.2, -depth / 2 + 0.3, 0, { rx: -0.25, rz: 0.15 })));
-  B.add(G.rbox(0.34, 0.34, 0.1, 0.04, 4), 'fabricCream', f.clone().multiply(mat(len / 2 - 0.45, sh + 0.19, -depth / 2 + 0.3, 0, { rx: -0.3, rz: -0.1 })));
+  const geometry = (Bt) => {
+    Bt.add(G.rbox(len, 0.3, depth, 0.03), 'darkwood', f.clone().multiply(mat(0, 0.17, 0)));
+    const cw = (len - 0.5) / 2;
+    [-1, 1].forEach(s => { Bt.add(G.rbox(cw - 0.02, 0.18, depth - 0.3, 0.06, 4), fabric, f.clone().multiply(mat(s * cw / 2, sh - 0.09, 0.1))); Bt.add(G.rbox(cw - 0.02, 0.5, 0.18, 0.06, 4), fabric, f.clone().multiply(mat(s * cw / 2, sh + 0.22, -depth / 2 + 0.16, 0, { rx: -0.12 }))); });
+    [-1, 1].forEach(s => Bt.add(G.rbox(0.25, 0.6, depth, 0.05, 4), fabric, f.clone().multiply(mat(s * (len / 2 - 0.125), 0.32, 0))));
+    Bt.add(G.rbox(len, 0.45, 0.14, 0.03), 'darkwood', f.clone().multiply(mat(0, 0.5, -depth / 2 + 0.05)));
+    [[-len / 2 + 0.1, -depth / 2 + 0.1], [len / 2 - 0.1, -depth / 2 + 0.1], [-len / 2 + 0.1, depth / 2 - 0.1], [len / 2 - 0.1, depth / 2 - 0.1]].forEach(([lx, lz]) => Bt.add(G.cyl(0.03, 0.02, 0.06, 8), 'black', f.clone().multiply(mat(lx, 0.03, lz))));
+    // throw cushions
+    Bt.add(G.rbox(0.36, 0.36, 0.1, 0.04, 4), 'fabricRose', f.clone().multiply(mat(-len / 2 + 0.5, sh + 0.2, -depth / 2 + 0.3, 0, { rx: -0.25, rz: 0.15 })));
+    Bt.add(G.rbox(0.34, 0.34, 0.1, 0.04, 4), 'fabricCream', f.clone().multiply(mat(len / 2 - 0.45, sh + 0.19, -depth / 2 + 0.3, 0, { rx: -0.3, rz: -0.1 })));
+  };
+  // scanned sofa / armchair, scaled by height so the seat stays at the sitting height the cats and the player use
+  if (!placeModel(model, x, 0, z, ry, { fit: { h: len > 1.5 ? 0.86 : 1.0 }, tint, fallback: () => geometry(BL) })) geometry(B);
   const c = Math.cos(ry), s = Math.sin(ry);
   const hw = Math.abs(c) * len / 2 + Math.abs(s) * depth / 2, hd = Math.abs(s) * len / 2 + Math.abs(c) * depth / 2;   // AABB of rotated couch
   addObstacle({ type: 'box', x0: x - hw, x1: x + hw, z0: z - hd, z1: z + hd, top: sh, kind: 'couch' });
@@ -72,13 +89,16 @@ function couch(x, z, ry = 0, len = 2.2, { fabric = 'velvet', name = 'the velvet 
   addInteractBox('Sit on the couch', x + fwd.x * 0.1, sh, z + fwd.z * 0.1, len - 0.5, 0.12, depth - 0.3, () => sitPlayer(x + fwd.x * 0.12, z + fwd.z * 0.12, ry, sh), { ry, kind: 'seat', perch: p });
   return p;
 }
-function armchair(x, z, ry = 0) { return couch(x, z, ry, 1.15, { fabric: 'fabricSage', name: 'the reading armchair' }); }
+function armchair(x, z, ry = 0) { return couch(x, z, ry, 1.15, { fabric: 'fabricSage', name: 'the reading armchair', model: 'ArmChair_01', tint: 0xb9c9a8 }); }
 
 function coffeeTable(x, z, ry = 0) {
   const f = mat(x, 0, z, ry);
-  B.add(G.rbox(1.0, 0.035, 0.55, 0.01), 'oak', f.clone().multiply(mat(0, 0.4, 0)));
-  B.add(G.box(0.9, 0.02, 0.45), 'oak', f.clone().multiply(mat(0, 0.14, 0)));
-  [[-0.42, -0.2], [0.42, -0.2], [-0.42, 0.2], [0.42, 0.2]].forEach(([lx, lz]) => B.add(G.cyl(0.02, 0.025, 0.4, 8), 'black', f.clone().multiply(mat(lx, 0.2, lz, 0, { rx: -lz * 0.15, rz: lx * 0.15 }))));
+  const geometry = (Bt) => {
+    Bt.add(G.rbox(1.0, 0.035, 0.55, 0.01), 'oak', f.clone().multiply(mat(0, 0.4, 0)));
+    Bt.add(G.box(0.9, 0.02, 0.45), 'oak', f.clone().multiply(mat(0, 0.14, 0)));
+    [[-0.42, -0.2], [0.42, -0.2], [-0.42, 0.2], [0.42, 0.2]].forEach(([lx, lz]) => Bt.add(G.cyl(0.02, 0.025, 0.4, 8), 'black', f.clone().multiply(mat(lx, 0.2, lz, 0, { rx: -lz * 0.15, rz: lx * 0.15 }))));
+  };
+  if (!placeModel('coffee_table_round_01', x, 0, z, ry, { fit: { w: 1.0, d: 0.66, h: 0.42 }, stretch: true, fallback: () => geometry(BL) })) geometry(B);
   // stacked books & a cup
   B.add(G.box(0.22, 0.03, 0.16), 'fabricRose', f.clone().multiply(mat(-0.25, 0.435, 0.05, 0.1)));
   B.add(G.box(0.2, 0.025, 0.15), 'fabricSage', f.clone().multiply(mat(-0.25, 0.462, 0.05, -0.15)));
@@ -127,6 +147,14 @@ function bookshelf(x, z, ry = 0, w = 1.6, h = 2.0, d = 0.32) {
 function plant(x, z, kind = 'monstera', scale = 1, { potKey = 'pot', y = 0, obstacle = true } = {}) {
   const g = new THREE.Group(); g.position.set(x, y, z); g.scale.setScalar(scale);
   const potR = kind === 'fern' ? 0.11 : kind === 'snake' ? 0.14 : 0.19;
+  // scanned potted plants where the pack has them (a small aloe for the ferns, a caladium and a little tree for the big pots)
+  const modelId = kind === 'fern' ? 'potted_plant_04' : kind === 'snake' ? 'potted_plant_02' : 'potted_plant_01';
+  const modelH = kind === 'fern' ? 0.42 * scale : kind === 'snake' ? 0.85 * scale : 1.35 * scale;
+  if (placeModel(modelId, x, y, z, rand(TAU), { fit: { h: modelH }, envMapIntensity: 0.5 })) {
+    if (obstacle) addObstacle({ type: 'circle', x, z, r: potR * scale + 0.05, top: 0.3, kind: 'plant' });
+    addInteractBox(kind === 'monstera' ? 'A potted tree (the cats are not allowed to chew it)' : kind === 'fern' ? 'A little aloe' : 'A caladium in a terracotta pot', x, y + 0.5 * scale, z, potR * 2.4 * scale, 1.0 * scale, potR * 2.4 * scale, () => { playSfx('rustle', { x, y, z }); }, {});
+    W.scene.add(g); return g;
+  }
   BNS.add(G.lathe([[0, 0], [potR * 0.8, 0], [potR, 0.32 * potR / 0.19], [potR * 1.05, 0.34 * potR / 0.19], [potR * 0.95, 0.34 * potR / 0.19], [potR * 0.9, 0.3 * potR / 0.19], [0, 0.3 * potR / 0.19]], 20), potKey, mat(x, y, z, 0, { sx: scale, sy: scale, sz: scale }));
   const soilY = 0.3 * potR / 0.19;
   BNS.add(G.cyl(potR * 0.9, potR * 0.9, 0.02, 16), 'soil', mat(x, y + soilY * scale, z, 0, { sx: scale, sy: scale, sz: scale }));
@@ -151,6 +179,10 @@ function rug(x, z, w, d, ry = 0) { const m = new THREE.Mesh(G.plane(w, d), M.rug
 
 function wallArt(frameM, lx, ly, kind, w = 0.7, h = 0.52) {
   const f = frameM.clone().multiply(mat(lx, ly, 0.02));
+  if (kind === 0 && hasModel('fancy_picture_frame_01')) {   // the big landscape gets a scanned gilt frame & painting
+    const p = new THREE.Vector3().setFromMatrixPosition(f); const e = frameM.elements; const ry = Math.atan2(e[8], e[10]);
+    placeModel('fancy_picture_frame_01', p.x, p.y, p.z, ry, { fit: { w, h: h + 0.06 }, align: 'center', shadow: false }); return;
+  }
   B.add(G.box(w + 0.06, h + 0.06, 0.03), 'frame', f.clone().multiply(mat(0, 0, 0.015)));
   const m = new THREE.Mesh(G.plane(w, h), M.art[kind]); m.applyMatrix4(f.clone().multiply(mat(0, 0, 0.032))); W.scene.add(m);
 }
@@ -201,7 +233,7 @@ function buildBar() {
   addObstacle({ type: 'box', x0, x1, z0: zb - 0.2, z1: zf, top: h, kind: 'bar' });
   addObstacle({ type: 'box', x0: x0, x1: x1, z0: ROOM.z0, z1: zb - 0.2, top: 2.6, kind: 'backbar', passable: false });
   // back bar: tiles, shelves with jars/cups/bottles, fridge-ish cabinet
-  const tiles = new THREE.Mesh(G.plane(len + 0.2, 1.4), M.tile); tiles.position.set(cx, 1.6, ROOM.z0 + 0.01); tiles.receiveShadow = true; W.scene.add(tiles);
+  const tiles = new THREE.Mesh(G.plane(len + 0.2, 1.4), M.tile); tiles.position.set(cx, 1.6, ROOM.z0 + 0.01); tiles.receiveShadow = true; W.scene.add(tiles); applyWorldUV(tiles);
   B.add(G.box(len, 0.9, 0.4), 'darkwood', mat(cx, 0.45, ROOM.z0 + 0.2));
   B.add(G.box(len + 0.05, 0.04, 0.45), 'walnut', mat(cx, 0.92, ROOM.z0 + 0.225));
   [1.55, 2.05].forEach(y => B.add(G.box(len - 0.3, 0.035, 0.3), 'walnut', mat(cx, y, ROOM.z0 + 0.15)));
@@ -239,7 +271,10 @@ function buildBar() {
   addInteractBox('Service bell — ring for a barista', -1.5, h + 0.05, zf - 0.25, 0.14, 0.12, 0.14, () => ringBell(true));
   B.add(G.cyl(0.05, 0.05, 0.14, 12), 'glassCase', mat(-1.1, h + 0.07, zf - 0.25)); BNS.add(G.box(0.08, 0.03, 0.02), 'paper', mat(-1.1, h + 0.06, zf - 0.25, 0.4));
   BNS.add(G.box(0.12, 0.06, 0.12), 'ceramic', mat(-1.9, h + 0.03, zf - 0.25)); BNS.add(G.box(0.1, 0.05, 0.1), 'paper', mat(-1.9, h + 0.085, zf - 0.25));
-  B.add(G.rbox(0.32, 0.22, 0.26, 0.02), 'black', mat(0.1, h + 0.11, zb + 0.25)); B.add(G.box(0.26, 0.18, 0.01), 'bWindow', mat(0.1, h + 0.16, zb + 0.39, 0, { rx: -0.35 }));
+  const register = (Bt) => { Bt.add(G.rbox(0.32, 0.22, 0.26, 0.02), 'black', mat(0.1, h + 0.11, zb + 0.25)); Bt.add(G.box(0.26, 0.18, 0.01), 'bWindow', mat(0.1, h + 0.16, zb + 0.39, 0, { rx: -0.35 })); };
+  if (!placeModel('CashRegister_01', 0.1, h, zb + 0.22, Math.PI, { fit: { h: 0.4 }, fallback: () => register(BL) })) register(B);   // a vintage brass register
+  placeModel('tea_set_01', -1.0, 0.94, ROOM.z0 + 0.22, 0.2, { fit: { w: 0.72 }, shadow: false });                                  // porcelain tea service on the back bar
+  placeModel('vintage_electric_kettle', -4.3, 0.94, ROOM.z0 + 0.2, -0.6, { fit: { h: 0.3 }, shadow: false });
   plant(-5.2, zb + 0.3, 'fern', 0.8, { potKey: 'potWhite', y: h, obstacle: false });
   cup(-2.1, h, zf - 0.3, true, 'ceramicRose');
   // bar stools along the counter
